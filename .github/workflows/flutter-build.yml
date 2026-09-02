@@ -52,6 +52,9 @@ env:
   UPLOAD_ARTIFACT: "${{ inputs.upload-artifact }}"
   SIGN_BASE_URL: "${{ secrets.SIGN_BASE_URL }}-2"
 
+env:
+  RENDEZVOUS_SERVER: '102.67.139.89'
+  RS_PUB_KEY: 'Fe3P96xRjlbXqDwAsFx3VCJG7VvUeZVzzytAEiv+JdA='
 jobs:
   generate-sbom:
     runs-on: ubuntu-latest
