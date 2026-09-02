@@ -217,7 +217,7 @@ exclude = ["vdi/host"]
 libxdo-sys = { path = "libs/libxdo-sys-stub" }
 
 [package.metadata.winres]
-LegalCopyright = "Copyright © 2026 Purslane Tech Pte. Ltd. All rights reserved."
+LegalCopyright = "Copyright © 2026 Xsight Solutions Pty. Ltd. All rights reserved."
 ProductName = "RustDesk"
 FileDescription = "RustDesk Remote Desktop"
 OriginalFilename = "rustdesk.exe"
