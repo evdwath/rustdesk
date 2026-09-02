@@ -19,6 +19,8 @@ on:
 # in this file!
 
 env:
+  RENDEZVOUS_SERVER: '102.67.139.89'
+  RS_PUB_KEY: 'Fe3P96xRjlbXqDwAsFx3VCJG7VvUeZVzzytAEiv+JdA='
   SCITER_RUST_VERSION: "1.75" # https://github.com/rustdesk/rustdesk/discussions/7503, also 1.78 has ABI change which causes our sciter version not working, https://blog.rust-lang.org/2024/03/30/i128-layout-update.html
   RUST_VERSION: "1.75" # sciter failed on m1 with 1.78 because of https://blog.rust-lang.org/2024/03/30/i128-layout-update.html
   MAC_RUST_VERSION: "1.81" # 1.81 is requred for macos, because of https://github.com/yury/cidre requires 1.81
@@ -53,9 +55,6 @@ env:
   UPLOAD_ARTIFACT: "${{ inputs.upload-artifact }}"
   SIGN_BASE_URL: "${{ secrets.SIGN_BASE_URL }}-2"
 
-env:
-  RENDEZVOUS_SERVER: '102.67.139.89'
-  RS_PUB_KEY: 'Fe3P96xRjlbXqDwAsFx3VCJG7VvUeZVzzytAEiv+JdA='
 jobs:
   generate-sbom:
     runs-on: ubuntu-latest
