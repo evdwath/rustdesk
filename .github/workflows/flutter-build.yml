@@ -160,7 +160,7 @@ jobs:
           python3 ./generate.py -f ../../rustdesk/ -o . -e ../../rustdesk/rustdesk.exe
           popd
           mkdir -p ./SignOutput
-          mmv ./target/release/rustdesk-portable-packer.exe "./SignOutput/XsightDesk.exe"
+          mv ./target/release/rustdesk-portable-packer.exe "./SignOutput/XsightDesk.exe"
 
       - name: Upload FINAL Executables to Artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
