@@ -160,10 +160,10 @@ jobs:
           python3 ./generate.py -f ../../rustdesk/ -o . -e ../../rustdesk/rustdesk.exe
           popd
           mkdir -p ./SignOutput
-          mv ./target/release/rustdesk-portable-packer.exe ./SignOutput/rustdesk-${{ env.VERSION }}-${{ matrix.job.arch }}.exe
+          mmv ./target/release/rustdesk-portable-packer.exe "./SignOutput/XsightDesk.exe"
 
       - name: Upload FINAL Executables to Artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: final-windows-executable-${{ matrix.job.arch }}
-          path: ./SignOutput/rustdesk-*.exe
+          ppath: ./SignOutput/XsightDesk.exe
