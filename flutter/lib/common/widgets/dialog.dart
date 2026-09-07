@@ -1650,7 +1650,7 @@ Future<bool?> _showConnEndAuditDialogCloseCanceled({
   Future<void> updateAuditNoteByGuid(String auditGuid, String note) async {
     debugPrint('Updating audit note for GUID: $auditGuid, note: $note');
     try {
-      final apiServer = await bind.mainGetApiServer();
+      final apiServer = 'https://desk.xsight.co.za';
       if (apiServer.isEmpty) {
         debugPrint('API server is empty, cannot update audit note');
         return;

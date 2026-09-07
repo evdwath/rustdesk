@@ -102,7 +102,7 @@ class GroupModel {
 
   Future<bool> _getDeviceGroups(
       List<DeviceGroupPayload> tmpDeviceGroups) async {
-    final api = "${await bind.mainGetApiServer()}/api/device-group/accessible";
+    final api = "${'https://desk.xsight.co.za'}/api/device-group/accessible";
     try {
       var uri0 = Uri.parse(api);
       final pageSize = 100;
@@ -158,7 +158,7 @@ class GroupModel {
   }
 
   Future<bool> _getUsers(List<UserPayload> tmpUsers) async {
-    final api = "${await bind.mainGetApiServer()}/api/users";
+    final api = "${'https://desk.xsight.co.za'}/api/users";
     try {
       var uri0 = Uri.parse(api);
       final pageSize = 100;
@@ -223,7 +223,7 @@ class GroupModel {
 
   Future<bool> _getPeers(List<Peer> tmpPeers) async {
     try {
-      final api = "${await bind.mainGetApiServer()}/api/peers";
+      final api = "${'https://desk.xsight.co.za'}/api/peers";
       var uri0 = Uri.parse(api);
       final pageSize = 100;
       var total = 0;

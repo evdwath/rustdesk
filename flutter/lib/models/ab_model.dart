@@ -230,7 +230,7 @@ class AbModel {
   Future<bool> _getAbSettings({required bool quiet}) async {
     int? statusCode;
     try {
-      final api = "${await bind.mainGetApiServer()}/api/ab/settings";
+      final api = "${'https://desk.xsight.co.za'}/api/ab/settings";
       var headers = getHttpHeaders();
       headers['Content-Type'] = "application/json";
       _setEmptyBody(headers);
@@ -262,7 +262,7 @@ class AbModel {
   Future<bool> _getPersonalAbGuid({required bool quiet}) async {
     int? statusCode;
     try {
-      final api = "${await bind.mainGetApiServer()}/api/ab/personal";
+      final api = "${'https://desk.xsight.co.za'}/api/ab/personal";
       var headers = getHttpHeaders();
       headers['Content-Type'] = "application/json";
       _setEmptyBody(headers);
@@ -294,7 +294,7 @@ class AbModel {
 
   Future<bool> _getSharedAbProfiles(List<AbProfile> profiles,
       {required bool quiet}) async {
-    final api = "${await bind.mainGetApiServer()}/api/ab/shared/profiles";
+    final api = "${'https://desk.xsight.co.za'}/api/ab/shared/profiles";
     int? statusCode;
     try {
       var uri0 = Uri.parse(api);
@@ -1007,7 +1007,7 @@ class LegacyAb extends BaseAb {
   @override
   Future<bool> pullAbImpl({quiet = false}) async {
     bool ret = false;
-    final api = "${await bind.mainGetApiServer()}/api/ab";
+    final api = "${'https://desk.xsight.co.za'}/api/ab";
     int? statusCode;
     try {
       var authHeaders = getHttpHeaders();
@@ -1061,7 +1061,7 @@ class LegacyAb extends BaseAb {
     try {
       //https: //stackoverflow.com/questions/68249333/flutter-getx-updating-item-in-children-list-is-not-reactive
       peers.refresh();
-      final api = "${await bind.mainGetApiServer()}/api/ab";
+      final api = "${'https://desk.xsight.co.za'}/api/ab";
       var authHeaders = getHttpHeaders();
       authHeaders['Content-Type'] = "application/json";
       final body = jsonEncode({"data": jsonEncode(_serialize())});
@@ -1430,7 +1430,7 @@ class Ab extends BaseAb {
   }
 
   Future<bool> _fetchPeers(List<Peer> tmpPeers, {quiet = false}) async {
-    final api = "${await bind.mainGetApiServer()}/api/ab/peers";
+    final api = "${'https://desk.xsight.co.za'}/api/ab/peers";
     int? statusCode;
     try {
       var uri0 = Uri.parse(api);
@@ -1497,7 +1497,7 @@ class Ab extends BaseAb {
   }
 
   Future<bool> _fetchTags(List<AbTag> tmpTags, {quiet = false}) async {
-    final api = "${await bind.mainGetApiServer()}/api/ab/tags/${profile.guid}";
+    final api = "${'https://desk.xsight.co.za'}/api/ab/tags/${profile.guid}";
     int? statusCode;
     try {
       var uri0 = Uri.parse(api);
@@ -1548,7 +1548,7 @@ class Ab extends BaseAb {
   Future<String?> addPeers(List<Map<String, dynamic>> ps) async {
     try {
       final api =
-          "${await bind.mainGetApiServer()}/api/ab/peer/add/${profile.guid}";
+          "${'https://desk.xsight.co.za'}/api/ab/peer/add/${profile.guid}";
       var headers = getHttpHeaders();
       headers['Content-Type'] = "application/json";
       for (var p in ps) {
@@ -1581,7 +1581,7 @@ class Ab extends BaseAb {
   Future<bool> changeTagForPeers(List<String> ids, List<dynamic> tags) async {
     try {
       final api =
-          "${await bind.mainGetApiServer()}/api/ab/peer/update/${profile.guid}";
+          "${'https://desk.xsight.co.za'}/api/ab/peer/update/${profile.guid}";
       var headers = getHttpHeaders();
       headers['Content-Type'] = "application/json";
       var ret = true;
@@ -1607,7 +1607,7 @@ class Ab extends BaseAb {
   Future<bool> changeAlias({required String id, required String alias}) async {
     try {
       final api =
-          "${await bind.mainGetApiServer()}/api/ab/peer/update/${profile.guid}";
+          "${'https://desk.xsight.co.za'}/api/ab/peer/update/${profile.guid}";
       var headers = getHttpHeaders();
       headers['Content-Type'] = "application/json";
       final body = jsonEncode({"id": id, "alias": alias});
@@ -1628,7 +1628,7 @@ class Ab extends BaseAb {
   Future<bool> changeNote({required String id, required String note}) async {
     try {
       final api =
-          "${await bind.mainGetApiServer()}/api/ab/peer/update/${profile.guid}";
+          "${'https://desk.xsight.co.za'}/api/ab/peer/update/${profile.guid}";
       var headers = getHttpHeaders();
       headers['Content-Type'] = "application/json";
       final body = jsonEncode({"id": id, "note": note});
@@ -1648,7 +1648,7 @@ class Ab extends BaseAb {
   Future<bool> _setPassword(Object bodyContent) async {
     try {
       final api =
-          "${await bind.mainGetApiServer()}/api/ab/peer/update/${profile.guid}";
+          "${'https://desk.xsight.co.za'}/api/ab/peer/update/${profile.guid}";
       var headers = getHttpHeaders();
       headers['Content-Type'] = "application/json";
       final body = jsonEncode(bodyContent);
@@ -1683,7 +1683,7 @@ class Ab extends BaseAb {
     bool uiUpdate = false;
     bool saveCache = false;
     final api =
-        "${await bind.mainGetApiServer()}/api/ab/peer/update/${profile.guid}";
+        "${'https://desk.xsight.co.za'}/api/ab/peer/update/${profile.guid}";
     var headers = getHttpHeaders();
     headers['Content-Type'] = "application/json";
 
@@ -1752,7 +1752,7 @@ class Ab extends BaseAb {
   Future<bool> deletePeers(List<String> ids) async {
     try {
       final api =
-          "${await bind.mainGetApiServer()}/api/ab/peer/${profile.guid}";
+          "${'https://desk.xsight.co.za'}/api/ab/peer/${profile.guid}";
       var headers = getHttpHeaders();
       headers['Content-Type'] = "application/json";
       final body = jsonEncode(ids);
@@ -1777,7 +1777,7 @@ class Ab extends BaseAb {
       List<String> tagList, Map<String, int> tagColorMap) async {
     try {
       final api =
-          "${await bind.mainGetApiServer()}/api/ab/tag/add/${profile.guid}";
+          "${'https://desk.xsight.co.za'}/api/ab/tag/add/${profile.guid}";
       var headers = getHttpHeaders();
       headers['Content-Type'] = "application/json";
       for (var t in tagList) {
@@ -1810,7 +1810,7 @@ class Ab extends BaseAb {
     }
     try {
       final api =
-          "${await bind.mainGetApiServer()}/api/ab/tag/rename/${profile.guid}";
+          "${'https://desk.xsight.co.za'}/api/ab/tag/rename/${profile.guid}";
       var headers = getHttpHeaders();
       headers['Content-Type'] = "application/json";
       final body = jsonEncode({
@@ -1834,7 +1834,7 @@ class Ab extends BaseAb {
   Future<bool> setTagColor(String tag, Color color) async {
     try {
       final api =
-          "${await bind.mainGetApiServer()}/api/ab/tag/update/${profile.guid}";
+          "${'https://desk.xsight.co.za'}/api/ab/tag/update/${profile.guid}";
       var headers = getHttpHeaders();
       headers['Content-Type'] = "application/json";
       final body = jsonEncode({
@@ -1857,7 +1857,7 @@ class Ab extends BaseAb {
   @override
   Future<bool> deleteTag(String tag) async {
     try {
-      final api = "${await bind.mainGetApiServer()}/api/ab/tag/${profile.guid}";
+      final api = "${'https://desk.xsight.co.za'}/api/ab/tag/${profile.guid}";
       var headers = getHttpHeaders();
       headers['Content-Type'] = "application/json";
       final body = jsonEncode([tag]);
