@@ -52,17 +52,15 @@ class _DesktopTabPageState extends State<DesktopTabPage> {
         page: DesktopHomePage(
           key: const ValueKey(kTabLabelHomePage),
         )));
-    if (bind.isIncomingOnly()) {
-      tabController.onSelected = (key) {
-        if (key == kTabLabelHomePage) {
-          windowManager.setSize(getIncomingOnlyHomeSize());
-          setResizable(false);
-        } else {
-          windowManager.setSize(getIncomingOnlySettingsSize());
-          setResizable(true);
-        }
-      };
-    }
+    tabController.onSelected = (key) {
+      if (key == kTabLabelHomePage) {
+        windowManager.setSize(getIncomingOnlyHomeSize());
+        setResizable(false);
+      } else {
+        windowManager.setSize(getIncomingOnlySettingsSize());
+        setResizable(true);
+      }
+    };
   }
 
   @override

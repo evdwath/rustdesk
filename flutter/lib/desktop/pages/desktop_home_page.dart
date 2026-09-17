@@ -97,12 +97,10 @@ class _DesktopHomePageState extends State<DesktopHomePage>
             Obx(() => buildHelpCards(stateGlobal.updateUrl.value))),
         builder: (_, data) {
           if (data.hasData) {
-            if (isIncomingOnly) {
-              if (isInHomePage()) {
-                Future.delayed(Duration(milliseconds: 300), () {
-                  _updateWindowSize();
-                });
-              }
+            if (isInHomePage()) {
+              Future.delayed(Duration(milliseconds: 300), () {
+                _updateWindowSize();
+              });
             }
             return data.data!;
           } else {
@@ -129,7 +127,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
     return ChangeNotifierProvider.value(
       value: gFFI.serverModel,
       child: Container(
-        width: isIncomingOnly ? 280.0 : 200.0,
+        width: 280.0,
         color: Theme.of(context).colorScheme.background,
         child: Stack(
           children: [
@@ -843,11 +841,9 @@ class _DesktopHomePageState extends State<DesktopHomePage>
     });
     _uniLinksSubscription = listenUniLinks();
 
-    if (bind.isIncomingOnly()) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _updateWindowSize();
-      });
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _updateWindowSize();
+    });
     WidgetsBinding.instance.addObserver(this);
   }
 
@@ -858,10 +854,8 @@ class _DesktopHomePageState extends State<DesktopHomePage>
     }
     if (renderObject is RenderBox) {
       final size = renderObject.size;
-      if (size != imcomingOnlyHomeSize) {
-        imcomingOnlyHomeSize = size;
-        windowManager.setSize(getIncomingOnlyHomeSize());
-      }
+      imcomingOnlyHomeSize = size;
+      windowManager.setSize(getIncomingOnlyHomeSize());
     }
   }
 

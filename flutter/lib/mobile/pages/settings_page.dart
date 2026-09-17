@@ -562,7 +562,7 @@ class _SettingsState extends State<SettingsPage> with WidgetsBindingObserver {
               title: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(translate('Keep RustDesk background service')),
+                    Text(translate('Keep XsightDesk background service')),
                     Text('* ${translate('Ignore Battery Optimizations')}',
                         style: Theme.of(context).textTheme.bodySmall),
                   ]),
