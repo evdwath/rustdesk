@@ -1,5 +1,5 @@
 [package]
-name = "rustdesk"
+name = "XsightDesk"
 version = "1.5.0"
 authors = ["rustdesk <info@rustdesk.com>"]
 edition = "2021"
@@ -218,8 +218,8 @@ libxdo-sys = { path = "libs/libxdo-sys-stub" }
 
 [package.metadata.winres]
 LegalCopyright = "Copyright © 2026 Xsight Solutions Pty. Ltd. All rights reserved."
-ProductName = "RustDesk"
-FileDescription = "RustDesk Remote Desktop"
+ProductName = "XsightDesk"
+FileDescription = "XsightDesk Remote Desktop"
 OriginalFilename = "rustdesk.exe"
 
 [target.'cfg(target_os="windows")'.build-dependencies]
@@ -236,7 +236,7 @@ hound = "3.5"
 docopt = "1.1"
 
 [package.metadata.bundle]
-name = "RustDesk"
+name = "XsightDesk"
 identifier = "com.carriez.rustdesk"
 icon = ["res/32x32.png", "res/128x128.png", "res/128x128@2x.png"]
 osx_minimum_system_version = "10.14"

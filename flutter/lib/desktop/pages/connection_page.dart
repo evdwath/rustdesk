@@ -206,6 +206,7 @@ class _ConnectionPageState extends State<ConnectionPage>
   final TextEditingController _idEditingController = TextEditingController();
 
   String selectedConnectionType = 'Connect';
+  String _accessMode = 'Attended Access';
 
   bool isWindowMinimized = false;
 
@@ -335,7 +336,9 @@ class _ConnectionPageState extends State<ConnectionPage>
     connect(context, id,
         isFileTransfer: isFileTransfer,
         isViewCamera: isViewCamera,
-        isTerminal: isTerminal);
+        isTerminal: isTerminal,
+        unattended: _accessMode == 'Unattended Access (15s Countdown)',
+        countdown: 15);
   }
 
   /// UI for the remote ID TextField.
@@ -516,6 +519,30 @@ class _ConnectionPageState extends State<ConnectionPage>
             Padding(
               padding: const EdgeInsets.only(top: 13.0),
               child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                SizedBox(
+                  height: 28.0,
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: _accessMode,
+                      items: [
+                        DropdownMenuItem(
+                          value: 'Attended Access',
+                          child: Text(translate('Attended Access'), style: TextStyle(fontSize: 13)),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Unattended Access (15s Countdown)',
+                          child: Text(translate('Unattended Access (15s Countdown)'), style: TextStyle(fontSize: 13)),
+                        ),
+                      ],
+                      onChanged: (v) {
+                        setState(() {
+                          _accessMode = v ?? 'Attended Access';
+                        });
+                      },
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
                 SizedBox(
                   height: 28.0,
                   child: ElevatedButton(

@@ -27,9 +27,9 @@ native-windows-gui = {version = "1.0", default-features = false, features = ["an
 
 [package.metadata.winres]
 LegalCopyright = "Copyright © 2026 Xsight Solutions Pty. Ltd. All rights reserved."
-ProductName = "RustDesk"
+ProductName = "XsightDesk"
 OriginalFilename = "rustdesk.exe"
-FileDescription = "RustDesk Remote Desktop"
+FileDescription = "XsightDesk Remote Desktop"
 #ProductVersion = ""
 
 [target.'cfg(target_os="windows")'.build-dependencies]

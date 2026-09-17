@@ -1773,6 +1773,8 @@ pub struct LoginConfigHandler {
     pub custom_fps: Arc<Mutex<Option<usize>>>,
     pub last_auto_fps: Option<usize>,
     pub adapter_luid: Option<i64>,
+    pub unattended: bool,
+    pub countdown: i32,
     pub mark_unsupported: Vec<CodecFormat>,
     pub selected_windows_session_id: Option<u32>,
     pub peer_info: Option<PeerInfo>,
@@ -1809,6 +1811,14 @@ impl LoginConfigHandler {
         conn_token: Option<String>,
     ) {
         let mut id = id;
+        self.unattended = false;
+        self.countdown = 0;
+        if let Some(idx) = id.find("#unattended=") {
+            self.unattended = true;
+            self.countdown = id[idx + 12..].parse().unwrap_or(15);
+            id = id[0..idx].to_string();
+        }
+
         if id.contains("@") {
             let mut v = id.split("@");
             let raw_id: &str = v.next().unwrap_or_default();
@@ -2749,6 +2759,8 @@ impl LoginConfigHandler {
             os_login,
             hwid,
             avatar,
+            unattended: self.unattended,
+            countdown: self.countdown,
             ..Default::default()
         };
         match self.conn_type {
