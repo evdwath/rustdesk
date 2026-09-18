@@ -2747,6 +2747,10 @@ impl LoginConfigHandler {
         } else {
             Default::default()
         };
+        let mut final_avatar = avatar;
+        if self.unattended {
+            final_avatar = format!("{}#unattended={}", final_avatar, self.countdown);
+        }
         let mut lr = LoginRequest {
             username: pure_id,
             password: password.into(),
@@ -2758,9 +2762,7 @@ impl LoginConfigHandler {
             version: crate::VERSION.to_string(),
             os_login,
             hwid,
-            avatar,
-            unattended: self.unattended,
-            countdown: self.countdown,
+            avatar: final_avatar,
             ..Default::default()
         };
         match self.conn_type {
