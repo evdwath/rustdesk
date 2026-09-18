@@ -1452,7 +1452,7 @@ pub fn check_update_broker_process() -> ResultType<()> {
 
 fn get_install_info_with_subkey(subkey: String) -> (String, String, String, String) {
     let mut path = get_reg_of(&subkey, "InstallLocation");
-    if path.is_empty() {
+    if path.is_empty() || path.to_lowercase().contains("rustdesk") {
         path = get_default_install_path();
     }
     path = path.trim_end_matches('\\').to_owned();
