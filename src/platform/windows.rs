@@ -2140,7 +2140,20 @@ pub fn is_win_10_or_greater() -> bool {
 
 pub fn bootstrap() -> bool {
     if let Ok(lic) = get_license_from_exe_name() {
-        *config::EXE_RENDEZVOUS_SERVER.write().unwrap() = lic.host.clone();
+        if !lic.host.is_empty() {
+            *config::EXE_RENDEZVOUS_SERVER.write().unwrap() = lic.host.clone();
+        }
+    }
+    if config::PROD_RENDEZVOUS_SERVER.read().unwrap().is_empty() {
+        *config::PROD_RENDEZVOUS_SERVER.write().unwrap() = "102.67.139.89".to_owned();
+    }
+    let custom = config::Config::get_option("custom-rendezvous-server");
+    if custom.is_empty() || custom == "support.summatech.co.za" || custom.contains("rustdesk.com") {
+        config::Config::set_option("custom-rendezvous-server".to_owned(), "102.67.139.89".to_owned());
+    }
+    let key = config::Config::get_option("key");
+    if key.is_empty() || key == "4Pt3JfGrDRNvnH3Staks6Rjf9WCTh4UjBtgOaTDcxDE=" || key == "OeVuKk5nlHiXp+APNn0Y3pC1Iwpwn44JGqrQCsWqmBw=" {
+        config::Config::set_option("key".to_owned(), "Fe3P96xRjlbXqDwAsFx3VCJG7VvUeZVzzytAEiv+JdA=".to_owned());
     }
 
     #[cfg(debug_assertions)]

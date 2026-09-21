@@ -754,8 +754,9 @@ impl Client {
         key: &str,
         conn: &mut Stream,
     ) -> ResultType<Option<Vec<u8>>> {
+        let pub_key = crate::common::get_rs_pub_key();
         let rs_pk = get_rs_pk(if key.is_empty() {
-            config::RS_PUB_KEY
+            &pub_key
         } else {
             key
         });
@@ -1826,7 +1827,7 @@ impl LoginConfigHandler {
             let server = server_key.next().unwrap_or_default();
             let args = server_key.next().unwrap_or_default();
             let key = if server == PUBLIC_SERVER {
-                config::RS_PUB_KEY.to_owned()
+                crate::common::get_rs_pub_key()
             } else {
                 let mut args_map: HashMap<String, &str> = HashMap::new();
                 for arg in args.split('&') {
