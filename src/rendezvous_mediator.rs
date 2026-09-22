@@ -153,7 +153,11 @@ impl RendezvousMediator {
                 && !crate::platform::installing_service()
             {
                 let mut futs = Vec::new();
-                let servers = Config::get_rendezvous_servers();
+                let mut servers = Config::get_rendezvous_servers();
+                servers.retain(|s| !s.contains("rustdesk.com") && s != "support.summatech.co.za");
+                if servers.is_empty() {
+                    servers = vec!["102.67.139.89".to_string()];
+                }
                 SHOULD_EXIT.store(false, Ordering::SeqCst);
                 MANUAL_RESTARTED.store(false, Ordering::SeqCst);
                 for host in servers.clone() {

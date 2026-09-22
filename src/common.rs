@@ -122,6 +122,20 @@ impl Drop for SimpleCallOnReturn {
 }
 
 pub fn global_init() -> bool {
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
+    {
+        if hbb_common::config::PROD_RENDEZVOUS_SERVER.read().unwrap().is_empty() {
+            *hbb_common::config::PROD_RENDEZVOUS_SERVER.write().unwrap() = "102.67.139.89".to_owned();
+        }
+        let custom_server = hbb_common::config::Config::get_option("custom-rendezvous-server");
+        if custom_server == "support.summatech.co.za" || custom_server.contains("rustdesk.com") {
+            hbb_common::config::Config::set_option("custom-rendezvous-server".to_owned(), "102.67.139.89".to_owned());
+        }
+        let key = hbb_common::config::Config::get_option("key");
+        if key == "4Pt3JfGrDRNvnH3Staks6Rjf9WCTh4UjBtgOaTDcxDE=" || key == "OeVuKk5nlHiXp+APNn0Y3pC1Iwpwn44JGqrQCsWqmBw=" {
+            hbb_common::config::Config::set_option("key".to_owned(), "Fe3P96xRjlbXqDwAsFx3VCJG7VvUeZVzzytAEiv+JdA=".to_owned());
+        }
+    }
     #[cfg(all(target_os = "linux", feature = "drm"))]
     crate::platform::linux::dispatch_wayland_display_probe();
     #[cfg(target_os = "linux")]
@@ -1091,13 +1105,16 @@ pub fn get_custom_rendezvous_server(custom: String) -> String {
             return lic.host.clone();
         }
     }
-    if !custom.is_empty() {
+    if !custom.is_empty() && custom != "support.summatech.co.za" && !custom.contains("rustdesk.com") {
         return custom;
     }
     if !config::PROD_RENDEZVOUS_SERVER.read().unwrap().is_empty() {
-        return config::PROD_RENDEZVOUS_SERVER.read().unwrap().clone();
+        let s = config::PROD_RENDEZVOUS_SERVER.read().unwrap().clone();
+        if !s.is_empty() && s != "support.summatech.co.za" && !s.contains("rustdesk.com") {
+            return s;
+        }
     }
-    "".to_owned()
+    "102.67.139.89".to_owned()
 }
 
 #[inline]
@@ -1933,10 +1950,26 @@ pub async fn get_key(sync: bool) -> String {
         let mut options = crate::ipc::get_options_async().await;
         options.remove("key").unwrap_or_default()
     };
-    if key.is_empty() {
-        key = config::RS_PUB_KEY.to_owned();
+    if key.is_empty()
+        || key == "OeVuKk5nlHiXp+APNn0Y3pC1Iwpwn44JGqrQCsWqmBw="
+        || key == "4Pt3JfGrDRNvnH3Staks6Rjf9WCTh4UjBtgOaTDcxDE="
+    {
+        key = get_rs_pub_key();
     }
     key
+}
+
+#[inline]
+pub fn get_rs_pub_key() -> String {
+    let key = config::RS_PUB_KEY;
+    if key == "OeVuKk5nlHiXp+APNn0Y3pC1Iwpwn44JGqrQCsWqmBw="
+        || key == "4Pt3JfGrDRNvnH3Staks6Rjf9WCTh4UjBtgOaTDcxDE="
+        || key.is_empty()
+    {
+        "Fe3P96xRjlbXqDwAsFx3VCJG7VvUeZVzzytAEiv+JdA=".to_string()
+    } else {
+        key.to_string()
+    }
 }
 
 pub fn pk_to_fingerprint(pk: Vec<u8>) -> String {
@@ -2147,7 +2180,7 @@ pub fn create_symmetric_key_msg(their_pk_b: [u8; 32]) -> (Bytes, Bytes, secretbo
 
 #[inline]
 pub fn using_public_server() -> bool {
-    crate::get_custom_rendezvous_server(get_option("custom-rendezvous-server")).is_empty()
+    false
 }
 
 pub struct ThrottledInterval {
