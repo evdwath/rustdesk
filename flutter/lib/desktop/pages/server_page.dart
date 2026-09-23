@@ -902,7 +902,11 @@ class _CmControlPanelState extends State<_CmControlPanel> {
         } else {
           _secondsLeft = 0;
           timer.cancel();
+          final canElevate = bind.cmCanElevate();
           handleAccept(context);
+          if (canElevate) {
+            handleElevate(context);
+          }
           windowManager.minimize();
         }
       });
