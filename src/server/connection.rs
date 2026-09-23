@@ -657,6 +657,7 @@ impl Connection {
                         ipc::Data::CmErr(e) => {
                             if e != "expected" {
                                 // cm closed before connection
+                                conn.send_close_reason_no_retry(&format!("connection manager error: {}", e)).await;
                                 conn.on_close(&format!("connection manager error: {}", e), false).await;
                                 break;
                             }
@@ -6154,7 +6155,7 @@ async fn start_ipc(
                 .unwrap()
                 .push(crate::run_me(args)?);
         }
-        for _ in 0..20 {
+        for _ in 0..30 {
             sleep(0.3).await;
             if let Ok(s) = crate::ipc::connect(1000, "_cm").await {
                 stream = Some(s);
