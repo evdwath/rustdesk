@@ -3380,13 +3380,22 @@ pub fn handle_login_error(
     err: &str,
     interface: &impl Interface,
 ) -> bool {
+    let is_unattended = lc.read().map(|l| l.unattended).unwrap_or(false);
     if err == LOGIN_MSG_PASSWORD_EMPTY {
-        lc.write().unwrap().password = Default::default();
-        interface.msgbox("input-password", "Password Required", "", "");
+        if let Ok(mut l) = lc.write() {
+            l.password = Default::default();
+        }
+        if !is_unattended {
+            interface.msgbox("input-password", "Password Required", "", "");
+        }
         true
     } else if err == LOGIN_MSG_PASSWORD_WRONG {
-        lc.write().unwrap().password = Default::default();
-        interface.msgbox("re-input-password", err, "Do you want to enter again?", "");
+        if let Ok(mut l) = lc.write() {
+            l.password = Default::default();
+        }
+        if !is_unattended {
+            interface.msgbox("re-input-password", err, "Do you want to enter again?", "");
+        }
         true
     } else if err == LOGIN_MSG_2FA_WRONG || err == REQUIRE_2FA {
         let enabled = lc.read().unwrap().get_option("trust-this-device") == "Y";
@@ -3621,7 +3630,7 @@ pub async fn handle_hash(
 
     let password = if password.is_empty() {
         // login without password, the remote side can click accept
-        if !lc.read().unwrap().unattended {
+        if !lc.read().map(|l| l.unattended).unwrap_or(false) {
             interface.msgbox("input-password", "Password Required", "", "");
         }
         Vec::new()

@@ -333,11 +333,18 @@ class _ConnectionPageState extends State<ConnectionPage>
       bool isViewCamera = false,
       bool isTerminal = false}) {
     var id = _idController.id;
+    final isUnattended = _accessMode == 'Unattended Access (15s Countdown)';
+    if (isUnattended) {
+      final clean = id.trim().replaceAll(' ', '');
+      if (!clean.contains('#unattended=')) {
+        id = '$clean#unattended=15';
+      }
+    }
     connect(context, id,
         isFileTransfer: isFileTransfer,
         isViewCamera: isViewCamera,
         isTerminal: isTerminal,
-        unattended: _accessMode == 'Unattended Access (15s Countdown)',
+        unattended: isUnattended,
         countdown: 15);
   }
 

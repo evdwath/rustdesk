@@ -168,7 +168,10 @@ class _RemotePageState extends State<RemotePage>
           .updateStatus(bind.sessionGetIsRecording(sessionId: _ffi.sessionId));
     });
     _ffi.canvasModel.initializeEdgeScrollFallback(this);
-    final connectId = widget.unattended ? '${widget.id}#unattended=${widget.countdown}' : widget.id;
+    final isUnattended = widget.unattended || widget.id.contains('#unattended=');
+    final connectId = isUnattended && !widget.id.contains('#unattended=')
+        ? '${widget.id}#unattended=${widget.countdown}'
+        : widget.id;
     _ffi.start(
       connectId,
       password: widget.password,
@@ -178,10 +181,12 @@ class _RemotePageState extends State<RemotePage>
       tabWindowId: widget.tabWindowId,
       display: widget.display,
       displays: widget.displays,
+      unattended: isUnattended,
+      countdown: widget.countdown,
     );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
-      final loadingText = widget.unattended
+      final loadingText = isUnattended
           ? translate('Connecting (Auto-accept countdown)...')
           : translate('Connecting...');
       _ffi.dialogManager

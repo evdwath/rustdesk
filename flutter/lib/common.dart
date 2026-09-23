@@ -2585,15 +2585,17 @@ connect(BuildContext context, String id,
     bool unattended = false,
     int countdown = 15}) async {
   if (id == '') return;
+  final isUnattendedMode = unattended || id.contains('#unattended=');
   if (!isDesktop || desktopType == DesktopType.main) {
     try {
+      final cleanDisplayId = id.contains('#') ? id.split('#').first : id;
       if (Get.isRegistered<IDTextEditingController>()) {
         final idController = Get.find<IDTextEditingController>();
-        idController.text = formatID(id);
+        idController.text = formatID(cleanDisplayId);
       }
       if (Get.isRegistered<TextEditingController>()) {
         final fieldTextEditingController = Get.find<TextEditingController>();
-        fieldTextEditingController.text = formatID(id);
+        fieldTextEditingController.text = formatID(cleanDisplayId);
       }
     } catch (_) {}
   }
@@ -2616,7 +2618,7 @@ connect(BuildContext context, String id,
         password: password,
         isSharedPassword: isSharedPassword,
         forceRelay: forceRelay,
-        unattended: unattended,
+        unattended: isUnattendedMode,
         countdown: countdown,
       );
     } else {
@@ -2631,7 +2633,7 @@ connect(BuildContext context, String id,
         'isSharedPassword': isSharedPassword,
         'forceRelay': forceRelay,
         'connToken': connToken,
-        'unattended': unattended,
+        'unattended': isUnattendedMode,
         'countdown': countdown,
       });
     }

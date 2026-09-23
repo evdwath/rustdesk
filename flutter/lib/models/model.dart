@@ -913,11 +913,17 @@ class FfiModel with ChangeNotifier {
       parent.target?.inputModel.setRelativeMouseMode(false);
     }
 
+    final isUnattended = parent.target?.unattended == true ||
+        (parent.target?.id.contains('#unattended=') ?? false) ||
+        (parent.target?.canvasModel.id.contains('#unattended=') ?? false);
+
     if (type == 're-input-password') {
+      if (isUnattended) return;
       wrongPasswordDialog(sessionId, dialogManager, type, title, text);
     } else if (type == 'input-2fa') {
       enter2FaDialog(sessionId, dialogManager);
     } else if (type == 'input-password') {
+      if (isUnattended) return;
       enterPasswordDialog(sessionId, dialogManager);
     } else if (type == 'terminal-admin-login') {
       enterUserLoginDialog(
@@ -3706,6 +3712,8 @@ enum ConnType {
 /// Flutter state manager and data communication with the Rust core.
 class FFI {
   var id = '';
+  var unattended = false;
+  var countdown = 15;
   var version = '';
   var connType = ConnType.defaultConn;
   var closed = false;
@@ -3798,8 +3806,13 @@ class FFI {
     int? tabWindowId,
     int? display,
     List<int>? displays,
+    bool unattended = false,
+    int countdown = 15,
   }) {
     closed = false;
+    this.id = id;
+    this.unattended = unattended || id.contains('#unattended=');
+    this.countdown = countdown;
     if (isMobile) mobileReset();
     assert(
         (!(isPortForward && isViewCamera)) &&
