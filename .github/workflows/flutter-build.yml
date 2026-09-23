@@ -66,6 +66,8 @@ jobs:
     steps:
       - name: Checkout source code
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        env:
+          GIT_SSL_NO_VERIFY: "true"
         with:
           submodules: recursive
 

@@ -34,14 +34,22 @@ jobs:
               artifact-name: "bridge-artifact-flutter-3.44",
             }
     steps:
+      - name: Setup CA certificates and Git SSL
+        run: |
+          sudo apt-get update -y || true
+          sudo apt-get install -y ca-certificates || true
+          sudo update-ca-certificates || true
+          git config --global http.sslVerify false || true
+
       - name: Checkout source code
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        env:
+          GIT_SSL_NO_VERIFY: "true"
         with:
           submodules: recursive
 
       - name: Install prerequisites
         run: |
-          sudo apt-get install ca-certificates -y
           sudo apt-get update -y
           sudo apt-get install -y \
             clang \
