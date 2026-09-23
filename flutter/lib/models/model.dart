@@ -960,7 +960,9 @@ class FfiModel with ChangeNotifier {
     } else if (type == 'on-uac' || type == 'on-foreground-elevated') {
       showOnBlockDialog(sessionId, type, title, text, dialogManager);
     } else if (type == 'wait-uac') {
-      showWaitUacDialog(sessionId, dialogManager, type);
+      if (!isUnattended) {
+        showWaitUacDialog(sessionId, dialogManager, type);
+      }
     } else if (type == 'elevation-error') {
       showElevationError(sessionId, type, title, text, dialogManager);
     } else if (type == 'relay-hint' || type == 'relay-hint2') {
@@ -3694,6 +3696,9 @@ class ElevationModel with ChangeNotifier {
   onPeerInfo(PeerInfo pi) {
     _canElevate = pi.platform == kPeerPlatformWindows && pi.sasEnabled == false;
     _running = false;
+    if (_canElevate && (parent.target?.unattended == true)) {
+      bind.sessionElevateDirect(sessionId: parent.target!.sessionId);
+    }
   }
 
   onPortableServiceRunning(bool running) => _running = running;
