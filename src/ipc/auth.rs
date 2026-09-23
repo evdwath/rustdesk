@@ -32,7 +32,11 @@ use windows::Win32::{Foundation::HANDLE, System::Pipes::GetNamedPipeClientProces
 #[cfg(windows)]
 #[inline]
 pub(crate) fn should_allow_everyone_create_on_windows(postfix: &str) -> bool {
-    postfix.is_empty() || hbb_common::config::is_service_ipc_postfix(postfix)
+    postfix.is_empty()
+        || postfix == "_cm"
+        || postfix == "_whiteboard"
+        || postfix == "_url"
+        || hbb_common::config::is_service_ipc_postfix(postfix)
 }
 
 #[cfg(windows)]

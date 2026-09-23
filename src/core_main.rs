@@ -407,6 +407,8 @@ pub fn core_main() -> Option<Vec<String>> {
             }
             #[cfg(windows)]
             crate::privacy_mode::restore_reg_connectivity(true, false);
+            #[cfg(windows)]
+            crate::platform::try_import_user_config();
             #[cfg(any(target_os = "linux", target_os = "windows"))]
             {
                 crate::start_server(true, false);
@@ -735,7 +737,7 @@ pub fn core_main() -> Option<Vec<String>> {
     return Some(args);
 }
 
-fn import_config(path: &str) {
+pub(crate) fn import_config(path: &str) {
     use hbb_common::{config::*, get_exe_time, get_modified_time};
     let path2 = path.replace(".toml", "2.toml");
     let path2 = std::path::Path::new(&path2);
@@ -746,16 +748,23 @@ fn import_config(path: &str) {
         log::info!("Empty source config, skipped");
         return;
     }
-    if get_modified_time(&path) > get_modified_time(&Config::file())
-        && get_modified_time(&path) < get_exe_time()
+    if !Config::file().exists()
+        || (get_modified_time(&path) > get_modified_time(&Config::file())
+            && get_modified_time(&path) < get_exe_time())
     {
-        if store_path(Config::file(), config).is_err() {
+        if let Err(err) = store_path(Config::file(), config) {
+            log::error!("failed to write config: {}", err);
+        } else {
             log::info!("config written");
         }
     }
     let config2: Config2 = load_path(path2.into());
-    if get_modified_time(&path2) > get_modified_time(&Config2::file()) {
-        if store_path(Config2::file(), config2).is_err() {
+    if !Config2::file().exists()
+        || get_modified_time(&path2) > get_modified_time(&Config2::file())
+    {
+        if let Err(err) = store_path(Config2::file(), config2) {
+            log::error!("failed to write config2: {}", err);
+        } else {
             log::info!("config2 written");
         }
     }

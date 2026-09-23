@@ -698,6 +698,7 @@ async fn run_service(_arguments: Vec<OsString>) -> ResultType<()> {
     // Tell the system that the service is running now
     status_handle.set_service_status(next_status)?;
 
+    try_import_user_config();
     let mut session_id = unsafe { get_current_session(share_rdp()) };
     log::info!("session id {}", session_id);
     let mut h_process = launch_server(session_id, true).await.unwrap_or(NULL);
@@ -852,7 +853,8 @@ pub fn launch_privileged_process(session_id: DWORD, cmd: &str) -> ResultType<HAN
 }
 
 pub fn run_as_user(arg: Vec<&str>) -> ResultType<Option<std::process::Child>> {
-    run_exe_in_cur_session(std::env::current_exe()?.to_str().unwrap_or(""), arg, false)
+    let show = !arg.iter().any(|a| *a == "--no-show");
+    run_exe_in_cur_session(std::env::current_exe()?.to_str().unwrap_or(""), arg, show)
 }
 
 pub fn run_exe_direct(
@@ -1153,6 +1155,38 @@ fn get_session_username(session_id: u32) -> String {
         .unwrap_or("".to_owned())
         .trim_end_matches('\0')
         .to_owned()
+}
+
+pub fn try_import_user_config() {
+    if !is_root() {
+        return;
+    }
+    if hbb_common::config::Config::file().exists() {
+        return;
+    }
+    let session_id = unsafe { get_current_session(share_rdp()) };
+    let username = get_session_username(session_id);
+    if !username.is_empty() {
+        let user_cfg = format!(
+            "C:\\Users\\{}\\AppData\\Roaming\\RustDesk\\config\\RustDesk.toml",
+            username
+        );
+        if std::path::Path::new(&user_cfg).exists() {
+            crate::core_main::import_config(&user_cfg);
+            return;
+        }
+    }
+    if let Ok(entries) = std::fs::read_dir("C:\\Users") {
+        for entry in entries.flatten() {
+            let user_cfg = entry.path().join("AppData\\Roaming\\RustDesk\\config\\RustDesk.toml");
+            if user_cfg.exists() {
+                if let Some(path_str) = user_cfg.to_str() {
+                    crate::core_main::import_config(path_str);
+                    return;
+                }
+            }
+        }
+    }
 }
 
 pub fn get_available_sessions(name: bool) -> Vec<WindowsSession> {
