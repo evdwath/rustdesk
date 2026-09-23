@@ -154,9 +154,8 @@ jobs:
           sed -i '/dpiAware/d' res/manifest.xml
           pushd ./libs/portable
           pip3 install -r requirements.txt
-          cp ../../rustdesk/rustdesk.exe ../../rustdesk/XsightDesk.exe
-          mv ../../rustdesk/rustdesk.exe ../../rustdesk/XsightDeskClient.exe
-          python3 ./generate.py -f ../../rustdesk/ -o . -e ../../rustdesk/XsightDeskClient.exe
+          mv ../../rustdesk/rustdesk.exe ../../rustdesk/XsightDesk.exe
+          python3 ./generate.py -f ../../rustdesk/ -o . -e ../../rustdesk/XsightDesk.exe
           popd
           mkdir -p ./SignOutput
           mv ./target/release/rustdesk-portable-packer.exe "./SignOutput/XsightDeskClient.exe"
@@ -168,11 +167,20 @@ jobs:
         shell: bash
         run: |
           pushd ./res/msi
-          python3 preprocess.py -arp -d ../../rustdesk --app-name XsightDesk --manufacturer "Xsight Solutions Pty. Ltd." -v ${{ env.VERSION }}
-          dotnet restore msi.sln
+          python3 preprocess.py --arp -d ../../rustdesk --app-name XsightDesk --manufacturer "Xsight Solutions Pty. Ltd." -v ${{ env.VERSION }}
           nuget restore msi.sln
+          dotnet restore Package/Package.wixproj
           msbuild msi.sln -p:Configuration=Release -p:Platform=x64 /p:TargetVersion=Windows10
-          mv ./Package/bin/x64/Release/en-us/Package.msi ../../SignOutput/XsightDeskClient.msi
+          MSI_FILE=$(find . -name "*.msi" | head -n 1)
+          if [ -n "$MSI_FILE" ] && [ -f "$MSI_FILE" ]; then
+            echo "Found MSI: $MSI_FILE"
+            cp "$MSI_FILE" ../../SignOutput/XsightDeskClient.msi
+          elif [ -f "./Package/bin/x64/Release/en-us/Package.msi" ]; then
+            cp "./Package/bin/x64/Release/en-us/Package.msi" ../../SignOutput/XsightDeskClient.msi
+          else
+            echo "Error: MSI file not found!"
+            exit 1
+          fi
           popd
 
       - name: Upload FINAL Executables to Artifacts
