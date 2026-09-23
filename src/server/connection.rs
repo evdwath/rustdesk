@@ -2187,6 +2187,14 @@ impl Connection {
     }
 
     fn try_start_cm(&mut self, peer_id: String, name: String, authorized: bool) {
+        let mut unattended = false;
+        let mut countdown = 0;
+        let mut avatar = self.lr.avatar.clone();
+        if let Some(idx) = avatar.find("#unattended=") {
+            unattended = true;
+            countdown = avatar[idx + 12..].parse().unwrap_or(15);
+            avatar = avatar[0..idx].to_string();
+        }
         self.send_to_cm(ipc::Data::Login {
             id: self.inner.id(),
             is_file_transfer: self.file_transfer.is_some(),
@@ -2195,7 +2203,7 @@ impl Connection {
             port_forward: self.port_forward_address.clone(),
             peer_id,
             name,
-            avatar: self.lr.avatar.clone(),
+            avatar,
             authorized,
             keyboard: self.keyboard,
             clipboard: self.clipboard,
@@ -2207,6 +2215,8 @@ impl Connection {
             block_input: self.block_input,
             privacy_mode: self.privacy_mode,
             from_switch: self.from_switch,
+            unattended,
+            countdown,
         });
     }
 

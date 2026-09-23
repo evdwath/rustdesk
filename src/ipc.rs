@@ -340,6 +340,8 @@ pub enum Data {
         block_input: bool,
         privacy_mode: bool,
         from_switch: bool,
+        unattended: bool,
+        countdown: i32,
     },
     ChatMessage {
         text: String,
