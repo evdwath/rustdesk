@@ -154,14 +154,31 @@ jobs:
           sed -i '/dpiAware/d' res/manifest.xml
           pushd ./libs/portable
           pip3 install -r requirements.txt
+          cp ../../rustdesk/rustdesk.exe ../../rustdesk/XsightDesk.exe
           mv ../../rustdesk/rustdesk.exe ../../rustdesk/XsightDeskClient.exe
           python3 ./generate.py -f ../../rustdesk/ -o . -e ../../rustdesk/XsightDeskClient.exe
           popd
           mkdir -p ./SignOutput
           mv ./target/release/rustdesk-portable-packer.exe "./SignOutput/XsightDeskClient.exe"
 
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Build msi
+        shell: bash
+        run: |
+          pushd ./res/msi
+          python3 preprocess.py -arp -d ../../rustdesk --app-name XsightDesk --manufacturer "Xsight Solutions Pty. Ltd." -v ${{ env.VERSION }}
+          dotnet restore msi.sln
+          nuget restore msi.sln
+          msbuild msi.sln -p:Configuration=Release -p:Platform=x64 /p:TargetVersion=Windows10
+          mv ./Package/bin/x64/Release/en-us/Package.msi ../../SignOutput/XsightDeskClient.msi
+          popd
+
       - name: Upload FINAL Executables to Artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: final-windows-executable-${{ matrix.job.arch }}
-          path: ./SignOutput/XsightDeskClient.exe
+          path: |
+            ./SignOutput/XsightDeskClient.exe
+            ./SignOutput/XsightDeskClient.msi
