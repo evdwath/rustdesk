@@ -46,6 +46,8 @@ class RemotePage extends StatefulWidget {
     this.switchUuid,
     this.forceRelay,
     this.isSharedPassword,
+    this.unattended = false,
+    this.countdown = 15,
   }) : super(key: key) {
     initSharedStates(id);
   }
@@ -60,6 +62,8 @@ class RemotePage extends StatefulWidget {
   final String? switchUuid;
   final bool? forceRelay;
   final bool? isSharedPassword;
+  final bool unattended;
+  final int countdown;
   final SimpleWrapper<State<RemotePage>?> _lastState = SimpleWrapper(null);
   final DesktopTabController? tabController;
 
@@ -164,8 +168,9 @@ class _RemotePageState extends State<RemotePage>
           .updateStatus(bind.sessionGetIsRecording(sessionId: _ffi.sessionId));
     });
     _ffi.canvasModel.initializeEdgeScrollFallback(this);
+    final connectId = widget.unattended ? '${widget.id}#unattended=${widget.countdown}' : widget.id;
     _ffi.start(
-      widget.id,
+      connectId,
       password: widget.password,
       isSharedPassword: widget.isSharedPassword,
       switchUuid: widget.switchUuid,
@@ -176,8 +181,11 @@ class _RemotePageState extends State<RemotePage>
     );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
+      final loadingText = widget.unattended
+          ? translate('Connecting (Auto-accept countdown)...')
+          : translate('Connecting...');
       _ffi.dialogManager
-          .showLoading(translate('Connecting...'), onCancel: closeConnection);
+          .showLoading(loadingText, onCancel: closeConnection);
     });
     WakelockManager.enable(_uniqueKey);
 

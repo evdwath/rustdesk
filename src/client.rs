@@ -3621,7 +3621,9 @@ pub async fn handle_hash(
 
     let password = if password.is_empty() {
         // login without password, the remote side can click accept
-        interface.msgbox("input-password", "Password Required", "", "");
+        if !lc.read().unwrap().unattended {
+            interface.msgbox("input-password", "Password Required", "", "");
+        }
         Vec::new()
     } else {
         let mut hasher = Sha256::new();

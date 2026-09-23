@@ -1300,7 +1300,12 @@ pub fn session_add(
         bail!("same session id is found");
     }
 
-    LocalConfig::set_remote_id(&id);
+    let clean_id = if let Some(idx) = id.find('#') {
+        &id[0..idx]
+    } else {
+        id
+    };
+    LocalConfig::set_remote_id(clean_id);
 
     let mut preset_password = password.clone();
     let shared_password = if is_shared_password {
