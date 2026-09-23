@@ -164,24 +164,37 @@ jobs:
         uses: microsoft/setup-msbuild@v2
 
       - name: Build msi
-        shell: bash
+        shell: pwsh
         run: |
-          pushd ./res/msi
-          python3 preprocess.py --arp -d ../../rustdesk --app-name XsightDesk --manufacturer "Xsight Solutions Pty. Ltd." -v ${{ env.VERSION }}
+          Push-Location ./res/msi
+          if (-not (Get-Command msbuild -ErrorAction SilentlyContinue)) {
+            $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+            if (Test-Path $vswhere) {
+              $msbuildPath = & $vswhere -latest -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe | Select-Object -First 1
+              if ($msbuildPath) {
+                $msbuildDir = Split-Path $msbuildPath
+                $env:PATH = "$msbuildDir;$env:PATH"
+                Write-Host "Added MSBuild to PATH: $msbuildDir"
+              }
+            }
+          }
+          python preprocess.py --arp -d ../../rustdesk --app-name XsightDesk --manufacturer "Xsight Solutions Pty. Ltd." -v $env:VERSION
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           nuget restore msi.sln
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           dotnet restore Package/Package.wixproj
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           msbuild msi.sln -p:Configuration=Release -p:Platform=x64 /p:TargetVersion=Windows10
-          MSI_FILE=$(find . -name "*.msi" | head -n 1)
-          if [ -n "$MSI_FILE" ] && [ -f "$MSI_FILE" ]; then
-            echo "Found MSI: $MSI_FILE"
-            cp "$MSI_FILE" ../../SignOutput/XsightDeskClient.msi
-          elif [ -f "./Package/bin/x64/Release/en-us/Package.msi" ]; then
-            cp "./Package/bin/x64/Release/en-us/Package.msi" ../../SignOutput/XsightDeskClient.msi
-          else
-            echo "Error: MSI file not found!"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $msi = (Get-ChildItem -Recurse -Filter *.msi | Select-Object -First 1).FullName
+          if ($msi -and (Test-Path $msi)) {
+            Write-Host "Found MSI at $msi"
+            Copy-Item $msi ../../SignOutput/XsightDeskClient.msi -Force
+          } else {
+            Write-Error "MSI file not found!"
             exit 1
-          fi
-          popd
+          }
+          Pop-Location
 
       - name: Upload FINAL Executables to Artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
