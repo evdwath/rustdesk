@@ -76,7 +76,9 @@ class _InstallPageBodyState extends State<_InstallPageBody>
   );
 
   _InstallPageBodyState() {
-    controller = TextEditingController(text: bind.installInstallPath());
+    final rawPath = bind.installInstallPath();
+    final defaultPath = rawPath.replaceAll(RegExp(r'RustDesk', caseSensitive: false), 'XsightDesk');
+    controller = TextEditingController(text: defaultPath);
     final installOptions = jsonDecode(bind.installInstallOptions());
     startmenu.value = installOptions['STARTMENUSHORTCUTS'] != '0';
     desktopicon.value = installOptions['DESKTOPSHORTCUTS'] != '0';
@@ -165,7 +167,7 @@ class _InstallPageBodyState extends State<_InstallPageBody>
                   .marginOnly(bottom: 7),
               Option(desktopicon, label: 'Create desktop icon')
                   .marginOnly(bottom: 7),
-              Option(printer, label: 'Install {$appName} Printer'),
+              Option(printer, label: 'Install XsightDesk Printer'),
               Container(
                   padding: EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -187,9 +189,9 @@ class _InstallPageBodyState extends State<_InstallPageBody>
                           InkWell(
                             hoverColor: Colors.transparent,
                             onTap: () => launchUrlString(
-                                'https://rustdesk.com/privacy.html'),
+                                'https://XsightDesk.com/privacy.html'),
                             child: Tooltip(
-                              message: 'https://rustdesk.com/privacy.html',
+                              message: 'https://XsightDesk.com/privacy.html',
                               child: Row(children: [
                                 Icon(Icons.launch_outlined, size: 16)
                                     .marginOnly(right: 5),

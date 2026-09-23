@@ -1072,12 +1072,17 @@ pub async fn do_check_software_update() -> hbb_common::ResultType<()> {
 
 #[inline]
 pub fn get_app_name() -> String {
-    hbb_common::config::APP_NAME.read().unwrap().clone()
+    let name = hbb_common::config::APP_NAME.read().unwrap().clone();
+    if name == "RustDesk" {
+        "XsightDesk".to_string()
+    } else {
+        name
+    }
 }
 
 #[inline]
 pub fn is_rustdesk() -> bool {
-    hbb_common::config::APP_NAME.read().unwrap().eq("XsightDesk")
+    hbb_common::config::APP_NAME.read().unwrap().eq("RustDesk")
 }
 
 #[inline]
@@ -1142,11 +1147,14 @@ fn get_api_server_(api: String, custom: String) -> String {
             return lic.api.clone();
         }
     }
-    if !api.is_empty() {
+    if !api.is_empty() && !api.contains("admin.rustdesk.com") {
         return api.to_owned();
     }
     let s0 = get_custom_rendezvous_server(custom);
     if !s0.is_empty() {
+        if s0 == "102.67.139.89" || s0 == "desk.xsight.co.za" {
+            return "https://desk.xsight.co.za".to_owned();
+        }
         let s = crate::increase_port(&s0, -2);
         if s == s0 {
             return format!("http://{}:{}", s, config::RENDEZVOUS_PORT - 2);
@@ -1154,7 +1162,7 @@ fn get_api_server_(api: String, custom: String) -> String {
             return format!("http://{}", s);
         }
     }
-    "https://admin.rustdesk.com".to_owned()
+    "https://desk.xsight.co.za".to_owned()
 }
 
 #[inline]
