@@ -240,10 +240,7 @@ extern "C"
             ZeroMemory(&si, sizeof si);
             si.cb = sizeof si;
             si.dwFlags = STARTF_USESHOWWINDOW;
-            if (as_user || show)
-            {
-                si.lpDesktop = (LPWSTR)L"winsta0\\default";
-            }
+            si.lpDesktop = (LPWSTR)L"winsta0\\default";
             si.wShowWindow = show ? SW_SHOW : SW_HIDE;
             wchar_t buf[MAX_PATH];
             wcscpy_s(buf, MAX_PATH, cmd);
