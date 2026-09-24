@@ -148,7 +148,7 @@ pub fn core_main() -> Option<Vec<String>> {
         _is_quick_support |= !crate::platform::is_installed()
             && args.is_empty()
             && (is_quick_support_exe(&arg_exe)
-                || config::LocalConfig::get_option("pre-elevate-service") == "Y"
+                || config::LocalConfig::get_option("pre-elevate-service") != "N"
                 || (!click_setup && crate::platform::is_elevated(None).unwrap_or(false)));
         crate::portable_service::client::set_quick_support(_is_quick_support);
     }

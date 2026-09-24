@@ -1164,28 +1164,34 @@ pub fn try_import_user_config() {
     if hbb_common::config::Config::file().exists() {
         return;
     }
+    let app_name = crate::get_app_name();
     let session_id = unsafe { get_current_session(share_rdp()) };
     let username = get_session_username(session_id);
-    if !username.is_empty() {
-        let user_cfg = format!(
-            "C:\\Users\\{}\\AppData\\Roaming\\RustDesk\\config\\RustDesk.toml",
-            username
-        );
-        if std::path::Path::new(&user_cfg).exists() {
-            crate::core_main::import_config(&user_cfg);
-            return;
+    let check_paths = |name: &str| -> Option<String> {
+        if !username.is_empty() {
+            let user_cfg = format!(
+                "C:\\Users\\{}\\AppData\\Roaming\\{}\\config\\{}.toml",
+                username, name, name
+            );
+            if std::path::Path::new(&user_cfg).exists() {
+                return Some(user_cfg);
+            }
         }
-    }
-    if let Ok(entries) = std::fs::read_dir("C:\\Users") {
-        for entry in entries.flatten() {
-            let user_cfg = entry.path().join("AppData\\Roaming\\RustDesk\\config\\RustDesk.toml");
-            if user_cfg.exists() {
-                if let Some(path_str) = user_cfg.to_str() {
-                    crate::core_main::import_config(path_str);
-                    return;
+        if let Ok(entries) = std::fs::read_dir("C:\\Users") {
+            for entry in entries.flatten() {
+                let user_cfg = entry.path().join(format!("AppData\\Roaming\\{}\\config\\{}.toml", name, name));
+                if user_cfg.exists() {
+                    if let Some(path_str) = user_cfg.to_str() {
+                        return Some(path_str.to_string());
+                    }
                 }
             }
         }
+        None
+    };
+
+    if let Some(path) = check_paths(&app_name).or_else(|| check_paths("RustDesk")) {
+        crate::core_main::import_config(&path);
     }
 }
 

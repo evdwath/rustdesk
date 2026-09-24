@@ -818,6 +818,8 @@ class Client {
   bool fromSwitch = false;
   bool inVoiceCall = false;
   bool incomingVoiceCall = false;
+  bool isUnattended = false;
+  int countdown = 0;
 
   RxInt unreadChatMessageCount = 0.obs;
 
@@ -847,6 +849,8 @@ class Client {
     fromSwitch = json['from_switch'];
     inVoiceCall = json['in_voice_call'];
     incomingVoiceCall = json['incoming_voice_call'];
+    isUnattended = json['unattended'] ?? false;
+    countdown = json['countdown'] ?? (isUnattended ? 15 : 0);
   }
 
   Map<String, dynamic> toJson() {
@@ -867,6 +871,8 @@ class Client {
     data['restart'] = restart;
     data['recording'] = recording;
     data['block_input'] = blockInput;
+    data['unattended'] = isUnattended;
+    data['countdown'] = countdown;
     data['privacy_mode'] = privacyMode;
     data['disconnected'] = disconnected;
     data['from_switch'] = fromSwitch;

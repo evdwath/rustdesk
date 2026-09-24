@@ -865,10 +865,59 @@ class _PrivilegeBoardState extends State<_PrivilegeBoard> {
 
 const double buttonBottomMargin = 8;
 
-class _CmControlPanel extends StatelessWidget {
+class _CmControlPanel extends StatefulWidget {
   final Client client;
 
   const _CmControlPanel({Key? key, required this.client}) : super(key: key);
+
+  @override
+  State<_CmControlPanel> createState() => _CmControlPanelState();
+}
+
+class _CmControlPanelState extends State<_CmControlPanel> {
+  Client get client => widget.client;
+  Timer? _countdownTimer;
+  late int _secondsLeft;
+
+  @override
+  void initState() {
+    super.initState();
+    _secondsLeft = client.countdown > 0 ? client.countdown : (client.isUnattended ? 15 : 0);
+    if (!client.authorized && (client.isUnattended || client.countdown > 0)) {
+      _startCountdown();
+    }
+  }
+
+  void _startCountdown() {
+    _countdownTimer?.cancel();
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) return;
+      if (client.authorized || client.disconnected) {
+        timer.cancel();
+        return;
+      }
+      setState(() {
+        if (_secondsLeft > 1) {
+          _secondsLeft--;
+        } else {
+          _secondsLeft = 0;
+          timer.cancel();
+          final canElevate = bind.cmCanElevate();
+          handleAccept(context);
+          if (canElevate) {
+            handleElevate(context);
+          }
+          windowManager.minimize();
+        }
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _countdownTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1075,12 +1124,41 @@ class _CmControlPanel extends StatelessWidget {
         model.showElevation &&
         client.type_() == ClientType.remote;
     final showAccept = model.approveMode != 'password';
+    final isCountdownActive = (client.isUnattended || client.countdown > 0) && _secondsLeft > 0;
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
+        if (isCountdownActive)
+          Container(
+            margin: const EdgeInsets.only(bottom: 6.0, left: 4.0, right: 4.0),
+            padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 8.0),
+            decoration: BoxDecoration(
+              color: Colors.orange.withOpacity(0.15),
+              border: Border.all(color: Colors.orange.withOpacity(0.8)),
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.timer_outlined, color: Colors.orange, size: 16),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    "Auto-accepting in ${_secondsLeft}s unless declined.",
+                    style: const TextStyle(
+                        color: Colors.orange,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
+            ),
+          ),
         Offstage(
           offstage: !showElevation || !showAccept,
           child: buildButton(context, color: Colors.green[700], onClick: () {
+            _countdownTimer?.cancel();
             handleAccept(context);
             handleElevate(context);
             windowManager.minimize();
@@ -1105,6 +1183,7 @@ class _CmControlPanel extends StatelessWidget {
                       context,
                       color: MyTheme.accent,
                       onClick: () {
+                        _countdownTimer?.cancel();
                         handleAccept(context);
                         windowManager.minimize();
                       },
@@ -1192,6 +1271,7 @@ class _CmControlPanel extends StatelessWidget {
   }
 
   void handleDisconnect() {
+    _countdownTimer?.cancel();
     bind.cmCloseConnection(connId: client.id);
   }
 
