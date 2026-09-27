@@ -5,10 +5,13 @@ on:
   push:
     branches:
       - master
+      - client-version
+      - SummaTech-Master
+      - SummaTech-Client
 
 env:
-  RENDEZVOUS_SERVER: '102.67.139.89'
-  RS_PUB_KEY: 'Fe3P96xRjlbXqDwAsFx3VCJG7VvUeZVzzytAEiv+JdA='
+  RENDEZVOUS_SERVER: 'support.summatech.co.za'
+  RS_PUB_KEY: '4Pt3JfGrDRNvnH3Staks6Rjf9WCTh4UjBtgOaTDcxDE='
   SCITER_RUST_VERSION: "1.75"
   RUST_VERSION: "1.75"
   MAC_RUST_VERSION: "1.81"
@@ -159,11 +162,11 @@ jobs:
           sed -i '/dpiAware/d' res/manifest.xml
           pushd ./libs/portable
           pip3 install -r requirements.txt
-          mv ../../rustdesk/rustdesk.exe ../../rustdesk/XsightDesk.exe
-          python3 ./generate.py -f ../../rustdesk/ -o . -e ../../rustdesk/XsightDesk.exe
+          mv ../../rustdesk/rustdesk.exe ../../rustdesk/SummaTechDesk.exe
+          python3 ./generate.py -f ../../rustdesk/ -o . -e ../../rustdesk/SummaTechDesk.exe
           popd
           mkdir -p ./SignOutput
-          mv ./target/release/rustdesk-portable-packer.exe "./SignOutput/XsightDesk.exe"
+          mv ./target/release/rustdesk-portable-packer.exe "./SignOutput/SummaTechDesk.exe"
 
       - name: Add MSBuild to PATH
         uses: microsoft/setup-msbuild@v2
@@ -183,7 +186,7 @@ jobs:
               }
             }
           }
-          python preprocess.py --arp -d ../../rustdesk --app-name XsightDesk --manufacturer "Xsight Solutions Pty. Ltd." -v $env:VERSION
+          python preprocess.py --arp -d ../../rustdesk --app-name SummaTechDesk --manufacturer "SummaTech Solutions (Pty) Ltd" -v $env:VERSION
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           nuget restore msi.sln
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
@@ -194,7 +197,7 @@ jobs:
           $msi = (Get-ChildItem -Recurse -Filter *.msi | Select-Object -First 1).FullName
           if ($msi -and (Test-Path $msi)) {
             Write-Host "Found MSI at $msi"
-            Copy-Item $msi ../../SignOutput/XsightDesk.msi -Force
+            Copy-Item $msi ../../SignOutput/SummaTechDesk.msi -Force
           } else {
             Write-Error "MSI file not found!"
             exit 1
@@ -206,5 +209,5 @@ jobs:
         with:
           name: final-windows-executable-${{ matrix.job.arch }}
           path: |
-            ./SignOutput/XsightDesk.exe
-            ./SignOutput/XsightDesk.msi
+            ./SignOutput/SummaTechDesk.exe
+            ./SignOutput/SummaTechDesk.msi

@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "Xsight Solutions" "\0"
-            VALUE "FileDescription", "Xsight Support" "\0"
+            VALUE "CompanyName", "SummaTech Solutions (Pty) Ltd" "\0"
+            VALUE "FileDescription", "SummaTechDesk" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "Xsight Support" "\0"
-            VALUE "LegalCopyright", "Copyright © 2026 Xsight Solutions Pty. Ltd. All rights reserved." "\0"
-            VALUE "OriginalFilename", "XsightSupport.exe" "\0"
-            VALUE "ProductName", "Xsight Support" "\0"
+            VALUE "InternalName", "SummaTechDesk" "\0"
+            VALUE "LegalCopyright", "Copyright © 2026 SummaTech Solutions (Pty) Ltd. All rights reserved." "\0"
+            VALUE "OriginalFilename", "SummaTechDesk.exe" "\0"
+            VALUE "ProductName", "SummaTechDesk" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

@@ -60,7 +60,7 @@ class UserModel {
       return;
     }
     _updateLocalUserInfo();
-    final url = 'https://desk.xsight.co.za';
+    final url = 'https://support.summatech.co.za';
     final body = {
       'id': await bind.mainGetMyId(),
       'uuid': await bind.mainGetUuid()
@@ -170,7 +170,7 @@ class UserModel {
   Future<void> logOut({String? apiServer}) async {
     final tag = gFFI.dialogManager.showLoading(translate('Waiting'));
     try {
-      final url = apiServer ?? 'https://desk.xsight.co.za';
+      final url = apiServer ?? 'https://support.summatech.co.za';
       final authHeaders = getHttpHeaders();
       authHeaders['Content-Type'] = "application/json";
       await http
@@ -191,7 +191,7 @@ class UserModel {
 
   /// throw [RequestException]
   Future<LoginResponse> login(LoginRequest loginRequest) async {
-    final url = 'https://desk.xsight.co.za';
+    final url = 'https://support.summatech.co.za';
     final resp = await http.post(Uri.parse('$url/api/login'),
         body: jsonEncode(loginRequest.toJson()));
 
@@ -238,7 +238,7 @@ class UserModel {
   /// data. Returns an empty list when no API server is configured or a
   /// successful response contains no third-party login options.
   static Future<List<dynamic>> queryOidcLoginOptions() async {
-    final url = 'https://desk.xsight.co.za';
+    final url = 'https://support.summatech.co.za';
     if (url.trim().isEmpty) return [];
     final resp = await http.get(Uri.parse('$url/api/login-options'));
     const successStatusCodeStart = 200;

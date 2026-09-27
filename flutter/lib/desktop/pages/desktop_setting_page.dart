@@ -2437,7 +2437,7 @@ class _AboutState extends State<_About> {
       final scrollController = ScrollController();
       return SingleChildScrollView(
         controller: scrollController,
-        child: _Card(title: translate('About XsightDesk'), children: [
+        child: _Card(title: translate('About SummaTechDesk'), children: [
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -2459,7 +2459,7 @@ class _AboutState extends State<_About> {
                       .marginSymmetric(vertical: 4.0)),
               InkWell(
                   onTap: () {
-                    launchUrlString('https://XsightDesk.com/privacy.html');
+                    launchUrlString('https://summatech.co.za/privacy.html');
                   },
                   child: Text(
                     translate('Privacy Statement'),
@@ -2467,7 +2467,7 @@ class _AboutState extends State<_About> {
                   ).marginSymmetric(vertical: 4.0)),
               InkWell(
                   onTap: () {
-                    launchUrlString('https://XsightDesk.com');
+                    launchUrlString('https://summatech.co.za');
                   },
                   child: Text(
                     translate('Website'),
@@ -2485,7 +2485,7 @@ class _AboutState extends State<_About> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Copyright © ${DateTime.now().toString().substring(0, 4)} Xsight Solutions pty. Ltd.\n$license',
+                            'Copyright © ${DateTime.now().toString().substring(0, 4)} SummaTech Solutions (Pty) Ltd.\n$license',
                             style: const TextStyle(color: Colors.white),
                           ),
                           Text(

@@ -3636,7 +3636,7 @@ Future<bool> setServerConfig(
       return false;
     }
   }
-  final oldApiServer = 'https://desk.xsight.co.za';
+  final oldApiServer = 'https://support.summatech.co.za';
 
   // should set one by one
   await bind.mainSetOption(
@@ -3644,7 +3644,7 @@ Future<bool> setServerConfig(
   await bind.mainSetOption(key: 'relay-server', value: config.relayServer);
   await bind.mainSetOption(key: 'api-server', value: config.apiServer);
   await bind.mainSetOption(key: 'key', value: config.key);
-  final newApiServer = 'https://desk.xsight.co.za';
+  final newApiServer = 'https://support.summatech.co.za';
   if (oldApiServer.isNotEmpty &&
       oldApiServer != newApiServer &&
       gFFI.userModel.isLogin) {
@@ -3749,7 +3749,7 @@ Widget loadPowered(BuildContext context) {
     cursor: SystemMouseCursors.click,
     child: GestureDetector(
       onTap: () {
-        launchUrl(Uri.parse('https://XsightDesk.com'));
+        launchUrl(Uri.parse('https://summatech.co.za'));
       },
       child: Opacity(
           opacity: 0.5,
@@ -4004,7 +4004,7 @@ get defaultOptionAccessMode => isCustomClient ? 'custom' : '';
 get defaultOptionApproveMode => isCustomClient ? 'password-click' : '';
 
 bool whitelistNotEmpty() {
-  // https://XsightDesk.com/docs/en/self-host/client-configuration/advanced-settings/#whitelist
+  // https://summatech.co.za
   final v = bind.mainGetOptionSync(key: kOptionWhitelist);
   return v != '' && v != ',';
 }

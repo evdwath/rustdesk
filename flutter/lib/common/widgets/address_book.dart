@@ -434,7 +434,7 @@ class _AddressBookState extends State<AddressBook> {
         MenuEntryDivider<String>(),
       if (!gFFI.abModel.legacyMode.value && canWrite)
         getEntry(translate("ab_web_console_tip"), () async {
-          final url = 'https://desk.xsight.co.za';
+          final url = 'https://support.summatech.co.za';
           if (await canLaunchUrlString(url)) {
             launchUrlString(url);
           }

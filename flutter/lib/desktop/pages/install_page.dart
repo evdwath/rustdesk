@@ -77,7 +77,9 @@ class _InstallPageBodyState extends State<_InstallPageBody>
 
   _InstallPageBodyState() {
     final rawPath = bind.installInstallPath();
-    final defaultPath = rawPath.replaceAll(RegExp(r'RustDesk', caseSensitive: false), 'XsightDesk');
+    final defaultPath = rawPath
+        .replaceAll(RegExp(r'RustDesk', caseSensitive: false), 'SummaTechDesk')
+        .replaceAll(RegExp(r'XsightDesk', caseSensitive: false), 'SummaTechDesk');
     controller = TextEditingController(text: defaultPath);
     final installOptions = jsonDecode(bind.installInstallOptions());
     startmenu.value = installOptions['STARTMENUSHORTCUTS'] != '0';
@@ -167,7 +169,7 @@ class _InstallPageBodyState extends State<_InstallPageBody>
                   .marginOnly(bottom: 7),
               Option(desktopicon, label: 'Create desktop icon')
                   .marginOnly(bottom: 7),
-              Option(printer, label: 'Install XsightDesk Printer'),
+              Option(printer, label: 'Install SummaTechDesk Printer'),
               Container(
                   padding: EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -189,9 +191,9 @@ class _InstallPageBodyState extends State<_InstallPageBody>
                           InkWell(
                             hoverColor: Colors.transparent,
                             onTap: () => launchUrlString(
-                                'https://XsightDesk.com/privacy.html'),
+                                'https://summatech.co.za/privacy.html'),
                             child: Tooltip(
-                              message: 'https://XsightDesk.com/privacy.html',
+                              message: 'https://summatech.co.za/privacy.html',
                               child: Row(children: [
                                 Icon(Icons.launch_outlined, size: 16)
                                     .marginOnly(right: 5),

@@ -19,7 +19,7 @@ fn get_printer_name(app_name: &str) -> Vec<u16> {
 
 #[cfg(target_os = "windows")]
 fn get_driver_name() -> Vec<u16> {
-    "XsightDesk v4 Printer Driver"
+    "SummaTechDesk v4 Printer Driver"
         .encode_utf16()
         .chain(Some(0))
         .collect()

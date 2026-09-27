@@ -82,7 +82,7 @@ fn create_windows(event_loop: &EventLoop<(String, CustomEvent)>) -> ResultType<V
         };
 
         let window_builder = WindowBuilder::new()
-            .with_title("XsightDesk whiteboard")
+            .with_title("SummaTechDesk whiteboard")
             .with_transparent(true)
             .with_decorations(false)
             .with_position(monitor.position())
