@@ -1,5 +1,5 @@
 [Unit]
-Description=XsightDesk
+Description=SummaTechDesk
 Requires=network.target
 After=systemd-user-sessions.service
 

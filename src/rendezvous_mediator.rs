@@ -154,9 +154,9 @@ impl RendezvousMediator {
             {
                 let mut futs = Vec::new();
                 let mut servers = Config::get_rendezvous_servers();
-                servers.retain(|s| !s.contains("rustdesk.com") && s != "support.summatech.co.za");
+                servers.retain(|s| !s.contains("rustdesk.com") && s != "102.67.139.89" && s != "desk.xsight.co.za");
                 if servers.is_empty() {
-                    servers = vec!["102.67.139.89".to_string()];
+                    servers = vec!["support.summatech.co.za".to_string()];
                 }
                 SHOULD_EXIT.store(false, Ordering::SeqCst);
                 MANUAL_RESTARTED.store(false, Ordering::SeqCst);

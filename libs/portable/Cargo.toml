@@ -26,10 +26,10 @@ windows = { version = "0.61", features = [
 native-windows-gui = {version = "1.0", default-features = false, features = ["animation-timer", "image-decoder"]}
 
 [package.metadata.winres]
-LegalCopyright = "Copyright © 2026 Xsight Solutions Pty. Ltd. All rights reserved."
-ProductName = "XsightDeskClient"
-OriginalFilename = "XsightDeskClient.exe"
-FileDescription = "XsightDesk Remote Desktop Client"
+LegalCopyright = "Copyright © 2026 SummaTech Solutions (Pty) Ltd. All rights reserved."
+ProductName = "SummaTechDeskClient"
+OriginalFilename = "SummaTechDeskClient.exe"
+FileDescription = "SummaTechDesk Remote Desktop Client"
 #ProductVersion = ""
 
 [target.'cfg(target_os="windows")'.build-dependencies]

@@ -124,16 +124,25 @@ impl Drop for SimpleCallOnReturn {
 pub fn global_init() -> bool {
     #[cfg(not(any(target_os = "android", target_os = "ios")))]
     {
-        if hbb_common::config::PROD_RENDEZVOUS_SERVER.read().unwrap().is_empty() {
-            *hbb_common::config::PROD_RENDEZVOUS_SERVER.write().unwrap() = "102.67.139.89".to_owned();
+        if hbb_common::config::PROD_RENDEZVOUS_SERVER.read().unwrap().is_empty()
+            || *hbb_common::config::PROD_RENDEZVOUS_SERVER.read().unwrap() == "102.67.139.89"
+        {
+            *hbb_common::config::PROD_RENDEZVOUS_SERVER.write().unwrap() = "support.summatech.co.za".to_owned();
         }
         let custom_server = hbb_common::config::Config::get_option("custom-rendezvous-server");
-        if custom_server == "support.summatech.co.za" || custom_server.contains("rustdesk.com") {
-            hbb_common::config::Config::set_option("custom-rendezvous-server".to_owned(), "102.67.139.89".to_owned());
+        if custom_server.is_empty()
+            || custom_server == "102.67.139.89"
+            || custom_server == "desk.xsight.co.za"
+            || custom_server.contains("rustdesk.com")
+        {
+            hbb_common::config::Config::set_option("custom-rendezvous-server".to_owned(), "support.summatech.co.za".to_owned());
         }
         let key = hbb_common::config::Config::get_option("key");
-        if key == "4Pt3JfGrDRNvnH3Staks6Rjf9WCTh4UjBtgOaTDcxDE=" || key == "OeVuKk5nlHiXp+APNn0Y3pC1Iwpwn44JGqrQCsWqmBw=" {
-            hbb_common::config::Config::set_option("key".to_owned(), "Fe3P96xRjlbXqDwAsFx3VCJG7VvUeZVzzytAEiv+JdA=".to_owned());
+        if key.is_empty()
+            || key == "Fe3P96xRjlbXqDwAsFx3VCJG7VvUeZVzzytAEiv+JdA="
+            || key == "OeVuKk5nlHiXp+APNn0Y3pC1Iwpwn44JGqrQCsWqmBw="
+        {
+            hbb_common::config::Config::set_option("key".to_owned(), "4Pt3JfGrDRNvnH3Staks6Rjf9WCTh4UjBtgOaTDcxDE=".to_owned());
         }
     }
     #[cfg(all(target_os = "linux", feature = "drm"))]
@@ -1073,8 +1082,8 @@ pub async fn do_check_software_update() -> hbb_common::ResultType<()> {
 #[inline]
 pub fn get_app_name() -> String {
     let name = hbb_common::config::APP_NAME.read().unwrap().clone();
-    if name == "RustDesk" {
-        "XsightDesk".to_string()
+    if name == "RustDesk" || name == "XsightDesk" {
+        "SummaTechDesk".to_string()
     } else {
         name
     }
@@ -1110,16 +1119,16 @@ pub fn get_custom_rendezvous_server(custom: String) -> String {
             return lic.host.clone();
         }
     }
-    if !custom.is_empty() && custom != "support.summatech.co.za" && !custom.contains("rustdesk.com") {
+    if !custom.is_empty() && custom != "102.67.139.89" && custom != "desk.xsight.co.za" && !custom.contains("rustdesk.com") {
         return custom;
     }
     if !config::PROD_RENDEZVOUS_SERVER.read().unwrap().is_empty() {
         let s = config::PROD_RENDEZVOUS_SERVER.read().unwrap().clone();
-        if !s.is_empty() && s != "support.summatech.co.za" && !s.contains("rustdesk.com") {
+        if !s.is_empty() && s != "102.67.139.89" && s != "desk.xsight.co.za" && !s.contains("rustdesk.com") {
             return s;
         }
     }
-    "102.67.139.89".to_owned()
+    "support.summatech.co.za".to_owned()
 }
 
 #[inline]
@@ -1147,13 +1156,13 @@ fn get_api_server_(api: String, custom: String) -> String {
             return lic.api.clone();
         }
     }
-    if !api.is_empty() && !api.contains("admin.rustdesk.com") {
+    if !api.is_empty() && !api.contains("admin.rustdesk.com") && !api.contains("desk.xsight.co.za") {
         return api.to_owned();
     }
     let s0 = get_custom_rendezvous_server(custom);
     if !s0.is_empty() {
-        if s0 == "102.67.139.89" || s0 == "desk.xsight.co.za" {
-            return "https://desk.xsight.co.za".to_owned();
+        if s0 == "support.summatech.co.za" {
+            return "https://support.summatech.co.za".to_owned();
         }
         let s = crate::increase_port(&s0, -2);
         if s == s0 {
@@ -1162,7 +1171,7 @@ fn get_api_server_(api: String, custom: String) -> String {
             return format!("http://{}", s);
         }
     }
-    "https://desk.xsight.co.za".to_owned()
+    "https://support.summatech.co.za".to_owned()
 }
 
 #[inline]
@@ -1960,7 +1969,7 @@ pub async fn get_key(sync: bool) -> String {
     };
     if key.is_empty()
         || key == "OeVuKk5nlHiXp+APNn0Y3pC1Iwpwn44JGqrQCsWqmBw="
-        || key == "4Pt3JfGrDRNvnH3Staks6Rjf9WCTh4UjBtgOaTDcxDE="
+        || key == "Fe3P96xRjlbXqDwAsFx3VCJG7VvUeZVzzytAEiv+JdA="
     {
         key = get_rs_pub_key();
     }
@@ -1971,10 +1980,10 @@ pub async fn get_key(sync: bool) -> String {
 pub fn get_rs_pub_key() -> String {
     let key = config::RS_PUB_KEY;
     if key == "OeVuKk5nlHiXp+APNn0Y3pC1Iwpwn44JGqrQCsWqmBw="
-        || key == "4Pt3JfGrDRNvnH3Staks6Rjf9WCTh4UjBtgOaTDcxDE="
+        || key == "Fe3P96xRjlbXqDwAsFx3VCJG7VvUeZVzzytAEiv+JdA="
         || key.is_empty()
     {
-        "Fe3P96xRjlbXqDwAsFx3VCJG7VvUeZVzzytAEiv+JdA=".to_string()
+        "4Pt3JfGrDRNvnH3Staks6Rjf9WCTh4UjBtgOaTDcxDE=".to_string()
     } else {
         key.to_string()
     }

@@ -2007,7 +2007,7 @@ fn get_public_base_dir() -> PathBuf {
 #[inline]
 pub fn get_custom_client_staging_dir() -> PathBuf {
     get_public_base_dir()
-        .join("XsightDesk")
+        .join("SummaTechDesk")
         .join("RustDeskCustomClientStaging")
 }
 
@@ -2184,16 +2184,25 @@ pub fn bootstrap() -> bool {
             *config::EXE_RENDEZVOUS_SERVER.write().unwrap() = lic.host.clone();
         }
     }
-    if config::PROD_RENDEZVOUS_SERVER.read().unwrap().is_empty() {
-        *config::PROD_RENDEZVOUS_SERVER.write().unwrap() = "102.67.139.89".to_owned();
+    if config::PROD_RENDEZVOUS_SERVER.read().unwrap().is_empty()
+        || *config::PROD_RENDEZVOUS_SERVER.read().unwrap() == "102.67.139.89"
+    {
+        *config::PROD_RENDEZVOUS_SERVER.write().unwrap() = "support.summatech.co.za".to_owned();
     }
     let custom = config::Config::get_option("custom-rendezvous-server");
-    if custom.is_empty() || custom == "support.summatech.co.za" || custom.contains("rustdesk.com") {
-        config::Config::set_option("custom-rendezvous-server".to_owned(), "102.67.139.89".to_owned());
+    if custom.is_empty()
+        || custom == "102.67.139.89"
+        || custom == "desk.xsight.co.za"
+        || custom.contains("rustdesk.com")
+    {
+        config::Config::set_option("custom-rendezvous-server".to_owned(), "support.summatech.co.za".to_owned());
     }
     let key = config::Config::get_option("key");
-    if key.is_empty() || key == "4Pt3JfGrDRNvnH3Staks6Rjf9WCTh4UjBtgOaTDcxDE=" || key == "OeVuKk5nlHiXp+APNn0Y3pC1Iwpwn44JGqrQCsWqmBw=" {
-        config::Config::set_option("key".to_owned(), "Fe3P96xRjlbXqDwAsFx3VCJG7VvUeZVzzytAEiv+JdA=".to_owned());
+    if key.is_empty()
+        || key == "Fe3P96xRjlbXqDwAsFx3VCJG7VvUeZVzzytAEiv+JdA="
+        || key == "OeVuKk5nlHiXp+APNn0Y3pC1Iwpwn44JGqrQCsWqmBw="
+    {
+        config::Config::set_option("key".to_owned(), "4Pt3JfGrDRNvnH3Staks6Rjf9WCTh4UjBtgOaTDcxDE=".to_owned());
     }
 
     #[cfg(debug_assertions)]
@@ -4104,7 +4113,7 @@ pub fn message_box(text: &str) {
         .encode_utf16()
         .chain(std::iter::once(0))
         .collect::<Vec<u16>>();
-    let caption = "XsightDesk Output"
+    let caption = "SummaTechDesk Output"
         .encode_utf16()
         .chain(std::iter::once(0))
         .collect::<Vec<u16>>();
@@ -4555,7 +4564,7 @@ pub fn send_raw_data_to_printer(printer_name: Option<String>, data: Vec<u8>) -> 
             data.len() as c_ulong,
         );
         if res != 0 {
-            bail!("Failed to send data to the printer, see logs in C:\\Windows\\temp\\test_XsightDesk.log for more details.");
+            bail!("Failed to send data to the printer, see logs in C:\\Windows\\temp\\test_SummaTechDesk.log for more details.");
         } else {
             log::info!("Successfully sent data to the printer");
         }

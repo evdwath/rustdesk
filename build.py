@@ -952,9 +952,9 @@ def build_flutter_windows(version, features, skip_portable_pack):
                   './rustdesk_portable.exe')
     print(
         f'output location: {os.path.abspath(os.curdir)}/rustdesk_portable.exe')
-    os.rename('./rustdesk_portable.exe', f'./XsightDeskClient.exe')
+    os.rename('./rustdesk_portable.exe', f'./SummaTechDeskClient.exe')
     print(
-        f'output location: {os.path.abspath(os.curdir)}/XsightDeskClient.exe')
+        f'output location: {os.path.abspath(os.curdir)}/SummaTechDeskClient.exe')
 
 
 def main():
