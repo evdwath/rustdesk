@@ -1190,7 +1190,7 @@ pub fn try_import_user_config() {
         None
     };
 
-    if let Some(path) = check_paths(&app_name).or_else(|| check_paths("RustDesk")) {
+    if let Some(path) = check_paths(&app_name) {
         crate::core_main::import_config(&path);
     }
 }
@@ -2179,6 +2179,9 @@ pub fn is_win_10_or_greater() -> bool {
 }
 
 pub fn bootstrap() -> bool {
+    if *config::APP_NAME.read().unwrap() != "SummaTechDesk" {
+        *config::APP_NAME.write().unwrap() = "SummaTechDesk".to_owned();
+    }
     if let Ok(lic) = get_license_from_exe_name() {
         if !lic.host.is_empty() {
             *config::EXE_RENDEZVOUS_SERVER.write().unwrap() = lic.host.clone();
