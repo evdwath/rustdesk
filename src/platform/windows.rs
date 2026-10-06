@@ -647,6 +647,15 @@ fn authorize_service_scoped_ipc_connection(
     if let Err(err) =
         ipc::ensure_peer_executable_matches_current_by_pid_opt(peer_pid, crate::POSTFIX_SERVICE)
     {
+        if peer_is_system.unwrap_or(false) {
+            log::debug!(
+                "Service-scoped IPC peer is authenticated as SYSTEM; skipping executable verification due to cross-session process access limitation: postfix={}, peer_pid={:?}, err={}",
+                crate::POSTFIX_SERVICE,
+                peer_pid,
+                err
+            );
+            return true;
+        }
         log::warn!(
                 "Rejected unauthorized connection on protected service-scoped IPC channel due to executable mismatch: postfix={}, peer_pid={:?}, err={}",
                 crate::POSTFIX_SERVICE,
@@ -2623,6 +2632,91 @@ unsafe fn read_token_user_buffer(token: WinHANDLE, subject: &str) -> ResultType<
     Ok(buffer)
 }
 
+#[derive(Debug, Clone, Copy)]
+pub struct NamedPipeClientInfo {
+    pub is_system: bool,
+    pub session_id: Option<u32>,
+    pub is_elevated: bool,
+}
+
+pub fn query_named_pipe_client_info(pipe_handle: WinHANDLE) -> ResultType<NamedPipeClientInfo> {
+    unsafe {
+        use windows::Win32::{
+            Security::{
+                GetTokenInformation as WinGetTokenInformation, IsWellKnownSid, RevertToSelf,
+                TokenElevation, TokenSessionId, TokenUser, WinLocalSystemSid,
+                TOKEN_ELEVATION, TOKEN_USER,
+            },
+            System::{
+                Pipes::ImpersonateNamedPipeClient,
+                Threading::{GetCurrentThread, OpenThreadToken},
+            },
+        };
+
+        ImpersonateNamedPipeClient(pipe_handle)
+            .map_err(|e| anyhow!("ImpersonateNamedPipeClient failed: {}", e))?;
+
+        struct ImpersonationGuard;
+        impl Drop for ImpersonationGuard {
+            fn drop(&mut self) {
+                unsafe {
+                    let _ = RevertToSelf();
+                }
+            }
+        }
+        let _guard = ImpersonationGuard;
+
+        let mut token = WinHANDLE::default();
+        OpenThreadToken(GetCurrentThread(), WIN_TOKEN_QUERY, true, &mut token)
+            .map_err(|e| anyhow!("OpenThreadToken failed: {}", e))?;
+
+        let result = (|| -> ResultType<NamedPipeClientInfo> {
+            let user_buf = read_token_user_buffer(token, "named pipe client")?;
+            let token_user: TOKEN_USER =
+                std::ptr::read_unaligned(user_buf.as_ptr() as *const TOKEN_USER);
+            let is_system = IsWellKnownSid(token_user.User.Sid, WinLocalSystemSid).as_bool();
+
+            let mut session_id = 0u32;
+            let mut return_len = 0u32;
+            let session_ok = WinGetTokenInformation(
+                token,
+                TokenSessionId,
+                Some(&mut session_id as *mut u32 as *mut core::ffi::c_void),
+                std::mem::size_of::<u32>() as u32,
+                &mut return_len,
+            )
+            .is_ok();
+            let session_id = if session_ok { Some(session_id) } else { None };
+
+            let mut elevation = TOKEN_ELEVATION::default();
+            let elevation_ok = WinGetTokenInformation(
+                token,
+                TokenElevation,
+                Some(&mut elevation as *mut TOKEN_ELEVATION as *mut core::ffi::c_void),
+                std::mem::size_of::<TOKEN_ELEVATION>() as u32,
+                &mut return_len,
+            )
+            .is_ok();
+            let is_elevated = if elevation_ok {
+                elevation.TokenIsElevated != 0
+            } else {
+                false
+            };
+
+            Ok(NamedPipeClientInfo {
+                is_system,
+                session_id,
+                is_elevated,
+            })
+        })();
+
+        if !token.is_invalid() {
+            let _ = WinCloseHandle(token);
+        }
+        result
+    }
+}
+
 /// Similar to `is_root()` / `is_local_system()` but for an arbitrary process.
 ///
 /// Returns `true` if the target process is running as LocalSystem (SID: S-1-5-18).
@@ -2630,6 +2724,9 @@ unsafe fn read_token_user_buffer(token: WinHANDLE, subject: &str) -> ResultType<
 /// TODO: After a few releases of real-world validation, consider replacing
 /// the legacy `is_local_system()` with this implementation.
 pub fn is_process_running_as_system(process_id: DWORD) -> ResultType<bool> {
+    if process_id == unsafe { GetCurrentProcessId() } {
+        return Ok(is_root());
+    }
     unsafe {
         let process = WinOpenProcess(WIN_PROCESS_QUERY_LIMITED_INFORMATION, false, process_id)
             .map_err(|e| anyhow!("Failed to open process {}: {}", process_id, e))?;
