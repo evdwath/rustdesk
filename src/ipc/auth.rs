@@ -719,6 +719,15 @@ pub(crate) fn authorize_windows_main_ipc_connection(stream: &Connection, postfix
         return false;
     }
     if let Err(err) = ensure_peer_executable_matches_current_by_pid_opt(peer_pid, postfix) {
+        if peer_is_system.unwrap_or(false) {
+            log::debug!(
+                "Main IPC peer is authenticated as SYSTEM; skipping executable verification due to cross-session process access limitation: postfix={}, peer_pid={:?}, err={}",
+                postfix,
+                peer_pid,
+                err
+            );
+            return true;
+        }
         log::warn!(
             "Rejected unauthorized connection on ipc channel due to executable mismatch: postfix={}, peer_pid={:?}, err={}",
             postfix,
@@ -825,6 +834,14 @@ impl ConnectionTmpl<parity_tokio_ipc::Connection> {
         }
     }
 
+    fn peer_client_info(&self) -> Option<crate::platform::windows::NamedPipeClientInfo> {
+        let pipe_handle = self.inner.get_ref().as_raw_handle();
+        if pipe_handle.is_null() {
+            return None;
+        }
+        crate::platform::windows::query_named_pipe_client_info(HANDLE(pipe_handle)).ok()
+    }
+
     fn server_authorization_status(
         &self,
     ) -> (
@@ -836,11 +853,16 @@ impl ConnectionTmpl<parity_tokio_ipc::Connection> {
         Option<bool>,
     ) {
         let peer_pid = self.peer_pid();
+        let client_info = self.peer_client_info();
         let server_session_id = crate::platform::windows::get_current_process_session_id();
-        let peer_session_id =
-            peer_pid.and_then(crate::platform::windows::get_session_id_of_process);
-        let peer_is_system_result =
-            peer_pid.map(crate::platform::windows::is_process_running_as_system);
+        let peer_session_id = client_info
+            .as_ref()
+            .and_then(|info| info.session_id)
+            .or_else(|| peer_pid.and_then(crate::platform::windows::get_session_id_of_process));
+        let peer_is_system_result = match client_info.as_ref().map(|info| info.is_system) {
+            Some(is_sys) => Some(Ok(is_sys)),
+            None => peer_pid.map(crate::platform::windows::is_process_running_as_system),
+        };
         let peer_is_system = peer_is_system_result
             .as_ref()
             .and_then(|r| r.as_ref().ok().copied());
@@ -852,7 +874,10 @@ impl ConnectionTmpl<parity_tokio_ipc::Connection> {
         let peer_is_elevated_result = if session_authorized {
             None
         } else {
-            peer_pid.map(|pid| crate::platform::windows::is_elevated(Some(pid)))
+            match client_info.as_ref().map(|info| info.is_elevated) {
+                Some(elevated) => Some(Ok(elevated)),
+                None => peer_pid.map(|pid| crate::platform::windows::is_elevated(Some(pid))),
+            }
         };
         let peer_is_elevated = peer_is_elevated_result
             .as_ref()
@@ -903,10 +928,15 @@ impl ConnectionTmpl<parity_tokio_ipc::Connection> {
         expected_active_session_id: Option<u32>,
     ) -> (bool, Option<u32>, Option<u32>, Option<bool>) {
         let peer_pid = self.peer_pid();
-        let peer_session_id =
-            peer_pid.and_then(crate::platform::windows::get_session_id_of_process);
-        let peer_is_system_result =
-            peer_pid.map(crate::platform::windows::is_process_running_as_system);
+        let client_info = self.peer_client_info();
+        let peer_session_id = client_info
+            .as_ref()
+            .and_then(|info| info.session_id)
+            .or_else(|| peer_pid.and_then(crate::platform::windows::get_session_id_of_process));
+        let peer_is_system_result = match client_info.as_ref().map(|info| info.is_system) {
+            Some(is_sys) => Some(Ok(is_sys)),
+            None => peer_pid.map(crate::platform::windows::is_process_running_as_system),
+        };
         let peer_is_system = peer_is_system_result
             .as_ref()
             .and_then(|r| r.as_ref().ok().copied());
