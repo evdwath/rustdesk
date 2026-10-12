@@ -2102,7 +2102,14 @@ async fn secure_tcp_impl(conn: &mut Stream, key: &str, log_on_success: bool) -> 
     let Some(rs_pk) = rs_pk else {
         bail!("Handshake failed: invalid public key from rendezvous server");
     };
-    match timeout(READ_TIMEOUT, conn.next()).await? {
+    let res = match timeout(1000, conn.next()).await {
+        Ok(res) => res,
+        Err(_) => {
+            log::info!("No key exchange from rendezvous server, proceeding in standard mode");
+            return Ok(());
+        }
+    };
+    match res {
         Some(Ok(bytes)) => {
             if let Ok(msg_in) = RendezvousMessage::parse_from_bytes(&bytes) {
                 match msg_in.union {
