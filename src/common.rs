@@ -122,19 +122,17 @@ impl Drop for SimpleCallOnReturn {
 }
 
 pub fn global_init() -> bool {
-    #[cfg(not(any(target_os = "android", target_os = "ios")))]
-    {
-        if hbb_common::config::PROD_RENDEZVOUS_SERVER.read().unwrap().is_empty() {
-            *hbb_common::config::PROD_RENDEZVOUS_SERVER.write().unwrap() = "102.67.139.89".to_owned();
-        }
-        let custom_server = hbb_common::config::Config::get_option("custom-rendezvous-server");
-        if custom_server == "support.summatech.co.za" || custom_server.contains("rustdesk.com") {
-            hbb_common::config::Config::set_option("custom-rendezvous-server".to_owned(), "102.67.139.89".to_owned());
-        }
-        let key = hbb_common::config::Config::get_option("key");
-        if key == "4Pt3JfGrDRNvnH3Staks6Rjf9WCTh4UjBtgOaTDcxDE=" || key == "OeVuKk5nlHiXp+APNn0Y3pC1Iwpwn44JGqrQCsWqmBw=" {
-            hbb_common::config::Config::set_option("key".to_owned(), "Fe3P96xRjlbXqDwAsFx3VCJG7VvUeZVzzytAEiv+JdA=".to_owned());
-        }
+    *hbb_common::config::APP_NAME.write().unwrap() = "XsightDesk".to_owned();
+    if hbb_common::config::PROD_RENDEZVOUS_SERVER.read().unwrap().is_empty() {
+        *hbb_common::config::PROD_RENDEZVOUS_SERVER.write().unwrap() = "102.67.139.89".to_owned();
+    }
+    let custom_server = hbb_common::config::Config::get_option("custom-rendezvous-server");
+    if custom_server.is_empty() || custom_server == "support.summatech.co.za" || custom_server.contains("rustdesk.com") {
+        hbb_common::config::Config::set_option("custom-rendezvous-server".to_owned(), "102.67.139.89".to_owned());
+    }
+    let key = hbb_common::config::Config::get_option("key");
+    if key.is_empty() || key == "4Pt3JfGrDRNvnH3Staks6Rjf9WCTh4UjBtgOaTDcxDE=" || key == "OeVuKk5nlHiXp+APNn0Y3pC1Iwpwn44JGqrQCsWqmBw=" {
+        hbb_common::config::Config::set_option("key".to_owned(), "Fe3P96xRjlbXqDwAsFx3VCJG7VvUeZVzzytAEiv+JdA=".to_owned());
     }
     #[cfg(all(target_os = "linux", feature = "drm"))]
     crate::platform::linux::dispatch_wayland_display_probe();
