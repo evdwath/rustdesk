@@ -206,7 +206,7 @@ class _ConnectionPageState extends State<ConnectionPage>
   final TextEditingController _idEditingController = TextEditingController();
 
   String selectedConnectionType = 'Connect';
-  String _accessMode = 'Attended Access';
+  String _accessMode = stateGlobal.accessMode.value;
 
   bool isWindowMinimized = false;
 
@@ -544,6 +544,7 @@ class _ConnectionPageState extends State<ConnectionPage>
                       onChanged: (v) {
                         setState(() {
                           _accessMode = v ?? 'Attended Access';
+                          stateGlobal.setAccessMode(_accessMode);
                         });
                       },
                     ),

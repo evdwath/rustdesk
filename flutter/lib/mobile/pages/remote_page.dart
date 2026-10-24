@@ -46,13 +46,17 @@ class RemotePage extends StatefulWidget {
       required this.id,
       this.password,
       this.isSharedPassword,
-      this.forceRelay})
+      this.forceRelay,
+      this.unattended = false,
+      this.countdown = 15})
       : super(key: key);
 
   final String id;
   final String? password;
   final bool? isSharedPassword;
   final bool? forceRelay;
+  final bool unattended;
+  final int countdown;
 
   @override
   State<RemotePage> createState() => _RemotePageState(id);
@@ -94,16 +98,25 @@ class _RemotePageState extends State<RemotePage> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     gFFI.ffiModel.updateEventListener(sessionId, widget.id);
+    final isUnattended = widget.unattended || widget.id.contains('#unattended=');
+    final connectId = isUnattended && !widget.id.contains('#unattended=')
+        ? '${widget.id}#unattended=${widget.countdown}'
+        : widget.id;
     gFFI.start(
-      widget.id,
+      connectId,
       password: widget.password,
       isSharedPassword: widget.isSharedPassword,
       forceRelay: widget.forceRelay,
+      unattended: isUnattended,
+      countdown: widget.countdown,
     );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
+      final loadingText = isUnattended
+          ? translate('Connecting (Auto-accept countdown)...')
+          : translate('Connecting...');
       gFFI.dialogManager
-          .showLoading(translate('Connecting...'), onCancel: closeConnection);
+          .showLoading(loadingText, onCancel: closeConnection);
     });
     WakelockManager.enable(_uniqueKey);
     _physicalFocusNode.requestFocus();

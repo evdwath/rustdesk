@@ -87,6 +87,7 @@ class _ConnectionPageState extends State<ConnectionPage> {
           if (!bind.isCustomClient() && !isIOS)
             Obx(() => _buildUpdateUI(stateGlobal.updateUrl.value)),
           _buildRemoteIDTextField(),
+          _buildAccessModeSelector(),
         ])),
         SliverFillRemaining(
           hasScrollBody: true,
@@ -96,11 +97,87 @@ class _ConnectionPageState extends State<ConnectionPage> {
     ).marginOnly(top: 2, left: 10, right: 10);
   }
 
+  Widget _buildAccessModeSelector() {
+    return Obx(() {
+      final isUnattended = stateGlobal.isUnattended;
+      final cardColor = Theme.of(context).cardColor;
+      return Container(
+        margin: const EdgeInsets.only(top: 2, bottom: 6, left: 2, right: 2),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+        decoration: BoxDecoration(
+          color: cardColor,
+          borderRadius: const BorderRadius.all(Radius.circular(10)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  isUnattended ? Icons.timer_outlined : Icons.person_outline,
+                  size: 19,
+                  color: isUnattended ? Colors.amber : MyTheme.darkGray,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  translate("Access Mode:"),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+            DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: stateGlobal.accessMode.value,
+                dropdownColor: cardColor,
+                icon: const Icon(Icons.arrow_drop_down, color: MyTheme.darkGray),
+                items: [
+                  DropdownMenuItem(
+                    value: 'Attended Access',
+                    child: Text(
+                      translate('Attended Access'),
+                      style: const TextStyle(fontSize: 13),
+                    ),
+                  ),
+                  DropdownMenuItem(
+                    value: 'Unattended Access (15s Countdown)',
+                    child: Text(
+                      translate('Unattended Access (15s Countdown)'),
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: isUnattended ? Colors.amber : null,
+                      ),
+                    ),
+                  ),
+                ],
+                onChanged: (v) {
+                  if (v != null) {
+                    stateGlobal.setAccessMode(v);
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
   /// Callback for the connect button.
   /// Connects to the selected peer.
   void onConnect() {
     var id = _idController.id;
-    connect(context, id);
+    final isUnattended = stateGlobal.isUnattended;
+    if (isUnattended) {
+      final clean = id.trim().replaceAll(' ', '');
+      if (!clean.contains('#unattended=')) {
+        id = '$clean#unattended=15';
+      }
+    }
+    connect(context, id, unattended: isUnattended, countdown: 15);
   }
 
   void onFocusChanged() {
