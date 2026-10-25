@@ -547,6 +547,8 @@ abstract class BasePeerCard extends StatelessWidget {
     bool isRDP = false,
     bool isTerminal = false,
     bool isTerminalRunAsAdmin = false,
+    bool? unattended,
+    int countdown = 15,
   }) {
     return MenuEntryButton<String>(
       childBuilder: (TextStyle? style) => Text(
@@ -566,6 +568,8 @@ abstract class BasePeerCard extends StatelessWidget {
           isTcpTunneling: isTcpTunneling,
           isRDP: isRDP,
           isTerminal: isTerminal || isTerminalRunAsAdmin,
+          unattended: unattended,
+          countdown: countdown,
         );
       },
       padding: menuPadding,
@@ -580,6 +584,18 @@ abstract class BasePeerCard extends StatelessWidget {
       (peer.alias.isEmpty
           ? translate('Connect')
           : '${translate('Connect')} ${peer.id}'),
+    );
+  }
+
+  @protected
+  MenuEntryBase<String> _connectUnattendedAction(BuildContext context) {
+    return _connectCommonAction(
+      context,
+      (peer.alias.isEmpty
+          ? '${translate('Connect')} (Unattended 15s)'
+          : '${translate('Connect')} ${peer.id} (Unattended 15s)'),
+      unattended: true,
+      countdown: 15,
     );
   }
 

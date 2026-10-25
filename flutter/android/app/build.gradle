@@ -112,6 +112,8 @@ android {
         keyPassword (keystoreProperties['keyPassword'] ?: 'XsightDesk2026!')
         storeFile (keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : file('xsightdesk-release.jks'))
         storePassword (keystoreProperties['storePassword'] ?: 'XsightDesk2026!')
+        v1SigningEnabled true
+        v2SigningEnabled true
       }
     }
 
