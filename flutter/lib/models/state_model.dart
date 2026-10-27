@@ -27,6 +27,25 @@ class StateGlobal {
 
   final updateUrl = ''.obs;
 
+  final RxString accessMode = 'Attended Access'.obs;
+  bool get isUnattended => accessMode.value == 'Unattended Access (15s Countdown)';
+
+  void initAccessMode() {
+    try {
+      final saved = bind.mainGetLocalOption(key: 'access_mode');
+      if (saved.isNotEmpty) {
+        accessMode.value = saved;
+      }
+    } catch (_) {}
+  }
+
+  void setAccessMode(String mode) {
+    accessMode.value = mode;
+    try {
+      bind.mainSetLocalOption(key: 'access_mode', value: mode);
+    } catch (_) {}
+  }
+
   String _inputSource = '';
 
   // Track relative mouse mode state for each peer connection.
@@ -133,6 +152,7 @@ class StateGlobal {
   }
 
   StateGlobal._() {
+    initAccessMode();
     if (isWebDesktop) {
       platformFFI.setFullscreenCallback((v) {
         _fullscreen.value = v;

@@ -122,7 +122,6 @@ impl Drop for SimpleCallOnReturn {
 }
 
 pub fn global_init() -> bool {
-    #[cfg(not(any(target_os = "android", target_os = "ios")))]
     {
         if *hbb_common::config::APP_NAME.read().unwrap() != "SummaTechDesk" {
             *hbb_common::config::APP_NAME.write().unwrap() = "SummaTechDesk".to_owned();
