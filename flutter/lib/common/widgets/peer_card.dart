@@ -592,8 +592,8 @@ abstract class BasePeerCard extends StatelessWidget {
     return _connectCommonAction(
       context,
       (peer.alias.isEmpty
-          ? '${translate('Connect')} (Unattended 15s)'
-          : '${translate('Connect')} ${peer.id} (Unattended 15s)'),
+          ? translate('Connect unattended')
+          : '${translate('Connect unattended')} ${peer.id}'),
       unattended: true,
       countdown: 15,
     );
