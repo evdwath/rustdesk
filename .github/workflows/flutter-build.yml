@@ -378,3 +378,204 @@ jobs:
         with:
           name: final-android-apk-arm64-v8a
           path: ./SignOutput/XsightDesk-arm64-v8a.apk
+
+  build-for-linux-arm64:
+    name: build-for-linux-arm64
+    needs: [generate-bridge]
+    runs-on: ubuntu-22.04-arm
+    steps:
+      - name: Free Disk Space (Ubuntu)
+        run: |
+          sudo rm -rf /opt/ghc /usr/local/lib/android /usr/share/dotnet || true
+
+      - name: Setup CA certificates and Git SSL
+        run: |
+          sudo apt-get update -y || true
+          sudo apt-get install -y ca-certificates || true
+          sudo update-ca-certificates || true
+          git config --global http.sslVerify false || true
+
+      - name: Checkout source code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        env:
+          GIT_SSL_NO_VERIFY: "true"
+        with:
+          submodules: recursive
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+               build-essential \
+               clang \
+               cmake \
+               curl \
+               gcc \
+               git \
+               g++ \
+               libayatana-appindicator3-dev \
+               libasound2-dev \
+               libclang-dev \
+               libgstreamer1.0-dev \
+               libgstreamer-plugins-base1.0-dev \
+               libgtk-3-dev \
+               liblzma-dev \
+               libpulse-dev \
+               libsqlite3-dev \
+               libssl-dev \
+               libva-dev \
+               libwayland-dev \
+               libxcb-randr0-dev \
+               libxcb-shape0-dev \
+               libxcb-xfixes0-dev \
+               libxdo-dev \
+               libxfixes-dev \
+               libxkbcommon-dev \
+               llvm-dev \
+               nasm \
+               ninja-build \
+               pkg-config \
+               python3 \
+               unzip \
+               wayland-protocols \
+               wget \
+               xz-utils \
+               zip
+          sudo apt-get remove -y libopus-dev || true
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9 # v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          targets: aarch64-unknown-linux-gnu
+          components: "rustfmt"
+
+      - name: Restore bridge files
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: bridge-artifact
+          path: ./
+
+      - name: Setup vcpkg with Github Actions binary cache
+        uses: lukka/run-vcpkg@b1a0dd252f06b9e25b3c022a9a03bd7a427fb6a2 # v11
+        with:
+          vcpkgDirectory: /opt/artifacts/vcpkg
+          vcpkgGitCommitId: ${{ env.VCPKG_COMMIT_ID }}
+          doNotCache: false
+
+      - name: Install vcpkg dependencies
+        env:
+          VCPKG_ROOT: /opt/artifacts/vcpkg
+          VCPKG_FORCE_SYSTEM_BINARIES: "1"
+        run: |
+          if ! $VCPKG_ROOT/vcpkg \
+            install \
+            --triplet arm64-linux \
+            --x-install-root="$VCPKG_ROOT/installed"; then
+            find "${VCPKG_ROOT}/" -name "*.log" | while read -r _1; do
+              echo "$_1:"
+              cat "$_1"
+            done
+            exit 1
+          fi
+        shell: bash
+
+      - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        with:
+          prefix-key: linux-arm64
+          key: aarch64-unknown-linux-gnu
+
+      - name: Build rustdesk lib
+        env:
+          VCPKG_ROOT: /opt/artifacts/vcpkg
+        run: |
+          sed -i 's/\["cdylib", "staticlib", "rlib"\]/\["cdylib"\]/g' Cargo.toml
+          cargo build --locked --lib --features hwcodec,flutter,unix-file-copy-paste --release
+        shell: bash
+
+      - name: Install flutter-elinux for arm64
+        shell: bash
+        run: |
+          mkdir -p "$HOME/flutter-sdk"
+          pushd "$HOME/flutter-sdk"
+          wget -q "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${{ env.FLUTTER_VERSION }}-stable.tar.xz"
+          tar xf "flutter_linux_${{ env.FLUTTER_VERSION }}-stable.tar.xz"
+          git clone https://github.com/sony/flutter-elinux.git
+          pushd flutter-elinux
+            git fetch
+            git reset --hard "${{ env.FLUTTER_VERSION }}"
+            bin/flutter-elinux doctor -v
+            bin/flutter-elinux precache --linux
+          popd
+          mkdir -p flutter-elinux/flutter/bin/cache/artifacts/engine/linux-arm64
+          cp -R flutter/bin/cache/artifacts/engine/linux-x64/shader_lib flutter-elinux/flutter/bin/cache/artifacts/engine/linux-arm64/
+          rm -rf flutter "flutter_linux_${{ env.FLUTTER_VERSION }}-stable.tar.xz"
+          pushd flutter-elinux/flutter
+            git apply "${{ github.workspace }}/.github/patches/flutter_3.24.4_dropdown_menu_enableFilter.diff"
+          popd
+          popd
+
+      - name: Build XsightDesk arm64 deb
+        shell: bash
+        run: |
+          export PATH="$HOME/flutter-sdk/flutter-elinux/bin:$PATH"
+          export DEB_ARCH=arm64
+          sed -i "s/flutter build linux --release/flutter-elinux build linux --release --verbose/g" ./build.py
+          sed -i "s/x64\/release/arm64\/release/g" ./build.py
+
+          sed -i 's/set(BINARY_NAME "rustdesk")/set(BINARY_NAME "xsightdesk")/g' ./flutter/linux/CMakeLists.txt
+          sed -i 's/com.carriez.flutter_hbb/com.xsightsolutions.xsightdesk/g' ./flutter/linux/CMakeLists.txt
+          sed -i 's/gtk_header_bar_set_title(header_bar, "rustdesk")/gtk_header_bar_set_title(header_bar, "XsightDesk")/g' ./flutter/linux/my_application.cc
+          sed -i 's/gtk_window_set_title(window, "rustdesk")/gtk_window_set_title(window, "XsightDesk")/g' ./flutter/linux/my_application.cc
+          sed -i 's/load_icon(theme, "rustdesk"/load_icon(theme, "xsightdesk"/g' ./flutter/linux/my_application.cc
+
+          sed -i 's/Description=RustDesk/Description=XsightDesk/g' ./res/rustdesk.service
+          sed -i 's|/usr/bin/rustdesk|/usr/bin/xsightdesk|g' ./res/rustdesk.service
+          sed -i 's/rustdesk --/xsightdesk --/g' ./res/rustdesk.service
+          sed -i 's|/run/rustdesk.pid|/run/xsightdesk.pid|g' ./res/rustdesk.service
+
+          sed -i 's/Name=RustDesk/Name=XsightDesk/g' ./res/rustdesk.desktop ./res/rustdesk-link.desktop
+          sed -i 's/Exec=rustdesk/Exec=xsightdesk/g' ./res/rustdesk.desktop ./res/rustdesk-link.desktop
+          sed -i 's/TryExec=rustdesk/TryExec=xsightdesk/g' ./res/rustdesk-link.desktop
+          sed -i 's/Icon=rustdesk/Icon=xsightdesk/g' ./res/rustdesk.desktop ./res/rustdesk-link.desktop
+          sed -i 's/StartupWMClass=rustdesk/StartupWMClass=xsightdesk/g' ./res/rustdesk.desktop ./res/rustdesk-link.desktop
+
+          sed -i 's/service rustdesk stop/service xsightdesk stop/g' ./res/DEBIAN/preinst
+          sed -i 's|/usr/share/rustdesk/rustdesk|/usr/share/xsightdesk/xsightdesk|g' ./res/DEBIAN/postinst
+          sed -i 's|/usr/bin/rustdesk|/usr/bin/xsightdesk|g' ./res/DEBIAN/postinst ./res/DEBIAN/prerm
+          sed -i 's|/usr/share/rustdesk/files/systemd/rustdesk.service|/usr/share/xsightdesk/files/systemd/xsightdesk.service|g' ./res/DEBIAN/postinst
+          sed -i 's/rustdesk\.service/xsightdesk.service/g' ./res/DEBIAN/postinst ./res/DEBIAN/prerm
+          sed -i 's/systemctl enable rustdesk/systemctl enable xsightdesk/g' ./res/DEBIAN/postinst
+          sed -i 's/systemctl start rustdesk/systemctl start xsightdesk/g' ./res/DEBIAN/postinst
+          sed -i 's/systemctl stop rustdesk/systemctl stop xsightdesk/g' ./res/DEBIAN/prerm
+          sed -i 's/systemctl disable rustdesk/systemctl disable xsightdesk/g' ./res/DEBIAN/prerm
+          sed -i 's/rustdesk +--server/xsightdesk +--server/g' ./res/DEBIAN/prerm
+          sed -i 's/stop rustdesk/stop xsightdesk/g' ./res/DEBIAN/prerm
+          sed -i 's/rm \/etc/rm -f \/etc/g' ./res/DEBIAN/postinst ./res/DEBIAN/prerm
+          sed -i 's|/root/.config/rustdesk|/root/.config/xsightdesk|g' ./res/DEBIAN/postrm
+
+          sed -i 's/Package: rustdesk/Package: xsightdesk/g' ./build.py
+          sed -i 's|Maintainer: rustdesk <info@rustdesk.com>|Maintainer: Xsight Solutions <support@xsight.co.za>|g' ./build.py
+          sed -i 's|Homepage: https://rustdesk.com|Homepage: https://xsight.co.za|g' ./build.py
+          sed -i 's/Description: A remote control software./Description: XsightDesk remote control software./g' ./build.py
+          sed -i 's|usr/share/rustdesk|usr/share/xsightdesk|g' ./build.py
+          sed -i 's|usr/bin/rustdesk|usr/bin/xsightdesk|g' ./build.py
+          sed -i 's|rustdesk\.service|xsightdesk.service|g' ./build.py
+          sed -i 's|rustdesk\.png|xsightdesk.png|g' ./build.py
+          sed -i 's|rustdesk\.svg|xsightdesk.svg|g' ./build.py
+          sed -i 's|rustdesk\.desktop|xsightdesk.desktop|g' ./build.py
+          sed -i 's|rustdesk-link\.desktop|xsightdesk-link.desktop|g' ./build.py
+
+          mv ./res/rustdesk.service ./res/xsightdesk.service
+          mv ./res/rustdesk.desktop ./res/xsightdesk.desktop
+          mv ./res/rustdesk-link.desktop ./res/xsightdesk-link.desktop
+
+          python3 ./build.py --flutter --skip-cargo
+          mkdir -p ./SignOutput
+          cp ./rustdesk-${{ env.VERSION }}.deb ./SignOutput/XsightDesk-arm64.deb
+
+      - name: Upload FINAL Executables to Artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: final-linux-deb-arm64
+          path: ./SignOutput/XsightDesk-arm64.deb
