@@ -469,6 +469,8 @@ jobs:
         run: |
           curl -fsSL https://github.com/Kitware/CMake/releases/download/v3.30.5/cmake-3.30.5-linux-aarch64.tar.gz \
             | sudo tar -xz --strip-components=1 -C /usr/local
+          curl -fsSL https://raw.githubusercontent.com/microsoft/vcpkg/b558d014078372de4dd1252dbbb1e252294e1b69/scripts/cmake/z_vcpkg_spdx.cmake \
+            -o /opt/artifacts/vcpkg/scripts/cmake/z_vcpkg_spdx.cmake
           cmake --version
         shell: bash
 
