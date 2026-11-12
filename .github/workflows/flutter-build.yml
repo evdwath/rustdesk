@@ -465,6 +465,13 @@ jobs:
           vcpkgGitCommitId: ${{ env.VCPKG_COMMIT_ID }}
           doNotCache: false
 
+      - name: Install newer CMake for vcpkg SPDX
+        run: |
+          curl -fsSL https://github.com/Kitware/CMake/releases/download/v3.30.5/cmake-3.30.5-linux-aarch64.tar.gz \
+            | sudo tar -xz --strip-components=1 -C /usr/local
+          cmake --version
+        shell: bash
+
       - name: Install vcpkg dependencies
         env:
           VCPKG_ROOT: /opt/artifacts/vcpkg
